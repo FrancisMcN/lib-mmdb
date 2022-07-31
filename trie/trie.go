@@ -39,13 +39,31 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 		ones += 96
 	}
 
+	var foundExisting bool
+	var existingData field.Field
+
 	for i := 0; i < ones; i++ {
+
+		if currentNode.Data() != nil {
+			foundExisting = true
+			existingData = currentNode.Data()
+			currentNode.SetData(nil)
+		}
+
 		if !isSet(cidr.IP, i) {
 			//left := currentNode.Children()[0]
 			left := currentNode.Left
 			if left == nil {
 				currentNode.SetLeft(node.NewNode())
 			}
+
+			if foundExisting {
+				if currentNode.Right == nil {
+					currentNode.Right = node.NewNode()
+				}
+				currentNode.Right.SetData(existingData)
+			}
+
 			currentNode = currentNode.Left
 
 		} else {
@@ -54,6 +72,14 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 			if right == nil {
 				currentNode.SetRight(node.NewNode())
 			}
+
+			if foundExisting {
+				if currentNode.Left == nil {
+					currentNode.Left = node.NewNode()
+				}
+				currentNode.Left.SetData(existingData)
+			}
+
 			currentNode = currentNode.Right
 
 		}

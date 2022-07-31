@@ -79,8 +79,8 @@ func (m *MMDB) Load(b []byte) {
 
 func (m MMDB) Query(ip net.IP) field.Field {
 
-	//ip[len(ip)-1-4] = 0
-	//ip[len(ip)-1-5] = 0
+	ip[len(ip)-1-4] = 0
+	ip[len(ip)-1-5] = 0
 
 	nodeCount := m.metadata.NodeCount
 	recordSize := m.metadata.RecordSize
@@ -92,7 +92,7 @@ func (m MMDB) Query(ip net.IP) field.Field {
 
 	offset := uint32(0)
 	nid := uint32(0)
-	for i := 0; i < 128 && nid < nodeCount && offset+uint32(nodeBytes) < uint32(len(m.Bst)); i++ {
+	for i := 0; i < 128 && nid < nodeCount /* && offset+uint32(nodeBytes) < uint32(len(m.Bst)) */; i++ {
 		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
 
 		//if !isSet(ip, i) {
