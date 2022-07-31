@@ -15,6 +15,7 @@ type Trie struct {
 	data       []byte
 	recordSize int
 	Size uint32
+	ShouldPrune bool
 }
 
 func NewTrie() *Trie {
@@ -25,6 +26,7 @@ func NewTrie() *Trie {
 		dataMap: make(map[string]int),
 		data: make([]byte, 0),
 		recordSize: 28,
+		ShouldPrune: true,
 	}
 }
 
@@ -68,7 +70,9 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 
 func (t *Trie) Finalise() {
 	nid := int64(0)
-	t._finalise(&t.root, &nid)
+	if t.ShouldPrune {
+		t._finalise(&t.root, &nid)
+	}
 	t._finalise2(t.root, &nid)
 	t._finalise3(t.root, nid)
 	(*t.totalId).Set(big.NewInt(nid))
@@ -127,7 +131,8 @@ func (t *Trie) _finalise2(n *node.Node, nid *int64) {
 }
 
 func (t *Trie) _finalise3(n *node.Node, nid int64) {
-	//fmt.Println(n)
+
+	// Adds the total node count to the nodes that point into the data section
 	if n != nil {
 
 		if (*n.Id()).Cmp(big.NewInt(0)) < 0 {
