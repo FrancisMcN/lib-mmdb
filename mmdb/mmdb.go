@@ -79,8 +79,8 @@ func (m *MMDB) Load(b []byte) {
 
 func (m MMDB) Query(ip net.IP) field.Field {
 
-	ip[len(ip)-1-4] = 0
-	ip[len(ip)-1-5] = 0
+	//ip[len(ip)-1-4] = 0
+	//ip[len(ip)-1-5] = 0
 
 	nodeCount := m.metadata.NodeCount
 	recordSize := m.metadata.RecordSize
