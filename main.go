@@ -34,6 +34,12 @@ func main() {
 	//c.IP[len(c.IP)-1-5] = 0
 	t.Insert(c, field.String("hello world /32"))
 
+	_, c, _ = net.ParseCIDR("1.1.0.0/32")
+	c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
+	t.Insert(c, field.String("net:1.178.112.0/20, asn:AS12975"))
+
 	//_, c, _ := net.ParseCIDR("8000::/1")
 	//c.IP = c.IP.To16()
 	//t.Insert(c, field.String("hello"))
