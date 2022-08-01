@@ -97,7 +97,7 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 			}
 		}
 		data = t.PointerifyMap(data.(field.Map))
-		fmt.Println(data)
+		//fmt.Println(data)
 		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
 		t.data = append(t.data, data.Bytes()...)
 	} else {
