@@ -84,11 +84,39 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 
 		}
 	}
-	if _, f := t.dataMap[data.String()]; !f {
+
+	if data.Type() == field.MapField {
+		for k, v := range data.(field.Map) {
+			if _, f := t.dataMap[fmt.Sprintf("%x", k)]; !f {
+				t.dataMap[fmt.Sprintf("%x", k)] = len(t.data)
+				t.data = append(t.data, k.Bytes()...)
+			}
+			if _, f := t.dataMap[fmt.Sprintf("%x", v)]; !f {
+				t.dataMap[fmt.Sprintf("%x", v)] = len(t.data)
+				t.data = append(t.data, v.Bytes()...)
+			}
+		}
+		data = t.PointerifyMap(data.(field.Map))
+		fmt.Println(data)
+		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+		t.data = append(t.data, data.Bytes()...)
+	} else {
 		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
 		t.data = append(t.data, data.Bytes()...)
 	}
-	id := big.NewInt(int64(uint32(t.dataMap[data.String()])))
+
+	//if dataPointer, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
+	//	t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//	t.data = append(t.data, data.Bytes()...)
+	//} else {
+	//	if data.Type() == field.MapField {
+	//		m := t.PointerifyMap(data.(field.Map))
+	//		fmt.Println(m)
+	//	} else {
+	//		t.data = append(t.data, field.Pointer(dataPointer).Bytes()...)
+	//	}
+	//}
+	id := big.NewInt(int64(uint32(t.dataMap[fmt.Sprintf("%x", data.String())])))
 	currentNode.SetData(data)
 	currentNode.SetId(&id)
 
@@ -115,7 +143,7 @@ func (t *Trie) _finalise(parent **node.Node, nid *int64) {
 		left := n.Left
 		right := n.Right
 		// Prune where two child nodes are the same
-		if left != nil && right != nil && left.Data() != nil && left.Data() == right.Data() {
+		if left != nil && right != nil && left.Data() != nil && right.Data() != nil && left.Data().String() == right.Data().String() {
 			//fmt.Println("found a node that can be removed")
 			//fmt.Println("parent", *parent)
 			*parent = node.NewNode()
@@ -271,6 +299,34 @@ func (t Trie) Bytes() []byte {
 	//t.Serialise(t.root.right, &bytes)
 
 	return bytes
+}
+
+func (t Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
+
+	m2 := make(map[field.Field]field.Field)
+	for k, v := range m {
+
+		var keyField field.Field
+		var valField field.Field
+
+		//fmt.Println(t.dataMap, fmt.Sprintf("%x", k.String()), fmt.Sprintf("%x", v.String()))
+
+		if key, f := t.dataMap[fmt.Sprintf("%x", k.String())]; f {
+			keyField = field.Pointer(key)
+		} else {
+			keyField = k
+		}
+
+		if val, f := t.dataMap[fmt.Sprintf("%x", v.String())]; f {
+			valField = field.Pointer(val)
+		} else {
+			valField = v
+		}
+		m2[keyField] = valField
+
+	}
+
+	return m2
 }
 
 // Determines if the 'bit' in the IP is set

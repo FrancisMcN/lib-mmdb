@@ -124,6 +124,7 @@ func (m MMDB) Query(ip net.IP) field.Field {
 	if nid > nodeCount {
 		fp := field.FieldParserSingleton()
 		dataOffset := (offset / uint32(nodeBytes)) - 16 - m.metadata.NodeCount
+		//fmt.Println(offset / uint32(nodeBytes), m.metadata.NodeCount, dataOffset)
 		fp.SetOffset(dataOffset)
 		return fp.Parse(m.Data)
 	}

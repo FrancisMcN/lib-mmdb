@@ -38,10 +38,14 @@ func (fp *FieldParser) Parse(b []byte) Field {
 
 	switch fieldType {
 	case PointerField:
+		//fmt.Println("fp", fp.offset)
 		field = PointerFromBytes(b)
-		//fmt.Println("field", field)
+		//fmt.Println(fmt.Sprintf("%08b", b[fp.offset:fp.offset+5]))
+		//fmt.Println(fmt.Sprintf("%x", b[fp.offset:fp.offset+5]))
+		//fmt.Println("field", field, uint32(field.(Pointer)))
+		//fmt.Println(fp.offset, field)
+		//fmt.Println("----")
 		field = field.(Pointer).Resolve(b)
-		//fmt.Println("resolved field", field)
 	case StringField:
 		//fmt.Println("string", fmt.Sprintf("%x %d", b[fp.offset:fp.offset+10], size))
 		field = StringFromBytes(b, size)
