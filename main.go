@@ -135,7 +135,7 @@ func main() {
 	//t.Insert(c, field.String("hello1"))
 
 	//t.Print()
-	fmt.Println("----")
+	//fmt.Println("----")
 	t.Finalise()
 	//t.Print()
 	err := ioutil.WriteFile("test.mmdb", db.Bytes(), 0644)

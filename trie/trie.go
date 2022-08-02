@@ -390,7 +390,7 @@ func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 		m2[keyField] = valField
 
 	}
-	fmt.Println("----")
+	//fmt.Println("----")
 
 	return m2
 }
