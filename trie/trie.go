@@ -85,10 +85,10 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 		}
 	}
 
-	//data = t.addData(data)
-
-	t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
-	t.data = append(t.data, data.Bytes()...)
+	data = t.addData(data)
+	//
+	//t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//t.data = append(t.data, data.Bytes()...)
 
 	//if data.Type() == field.MapField {
 	//	for k, v := range data.(field.Map) {
