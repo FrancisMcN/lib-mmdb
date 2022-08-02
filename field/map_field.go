@@ -3,6 +3,7 @@ package field
 import (
 	"encoding/binary"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -36,7 +37,7 @@ func MapFromBytes(b []byte, items uint32) Map {
 		//if val.Type() == PointerField {
 		//	//val = val.(Pointer).Resolve(b)
 		//}
-		fmt.Println(key, val)
+		//fmt.Println(key, val)
 		m[key.(String)] = val
 		//fmt.Println(m)
 	}
@@ -47,13 +48,23 @@ func MapFromBytes(b []byte, items uint32) Map {
 
 func (m Map) String() string {
 	var sb strings.Builder
-	sb.WriteString("[ ")
-	i := 0
+	kv := make([]string, 0)
+	//i := 0
 	for k, v := range m {
+		kv = append(kv, fmt.Sprintf("%s:%s", k, v))
 		//if k.Type() == PointerField {
 		//	//k = k.(Pointer).Resolve()
 		//}
-		sb.WriteString(fmt.Sprintf("%s:%s", k, v))
+		//sb.WriteString(fmt.Sprintf("%s:%s", k, v))
+		//i++
+		//if i < len(m) {
+		//	sb.WriteString(" ")
+		//}
+	}
+	sort.Strings(kv)
+	sb.WriteString("[ ")
+	for i, v := range kv {
+		sb.WriteString(v)
 		i++
 		if i < len(m) {
 			sb.WriteString(" ")

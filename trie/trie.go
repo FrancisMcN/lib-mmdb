@@ -85,31 +85,36 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 		}
 	}
 
-	if data.Type() == field.MapField {
-		for k, v := range data.(field.Map) {
-			if _, f := t.dataMap[fmt.Sprintf("%x", k)]; !f {
-				t.dataMap[fmt.Sprintf("%x", k)] = len(t.data)
-				t.data = append(t.data, k.Bytes()...)
-			}
-			if _, f := t.dataMap[fmt.Sprintf("%x", v)]; !f {
-				t.dataMap[fmt.Sprintf("%x", v)] = len(t.data)
-				t.data = append(t.data, v.Bytes()...)
-			}
-		}
-		data = t.PointerifyMap(data.(field.Map))
-		//fmt.Println(data)
-		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
-		t.data = append(t.data, data.Bytes()...)
-	} else {
-		if ptr, f := t.dataMap[fmt.Sprintf("%x",data)]; !f {
-			t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
-			t.data = append(t.data, data.Bytes()...)
-		} else {
-			p := field.Pointer(ptr)
-			t.dataMap[fmt.Sprintf("%x", p)] = len(t.data)
-			t.data = append(t.data, p.Bytes()...)
-		}
-	}
+	data = t.addData(data)
+	//
+	//t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//t.data = append(t.data, data.Bytes()...)
+
+	//if data.Type() == field.MapField {
+	//	for k, v := range data.(field.Map) {
+	//		if _, f := t.dataMap[fmt.Sprintf("%x", k)]; !f {
+	//			t.dataMap[fmt.Sprintf("%x", k)] = len(t.data)
+	//			t.data = append(t.data, k.Bytes()...)
+	//		}
+	//		if _, f := t.dataMap[fmt.Sprintf("%x", v)]; !f {
+	//			t.dataMap[fmt.Sprintf("%x", v)] = len(t.data)
+	//			t.data = append(t.data, v.Bytes()...)
+	//		}
+	//	}
+	//	data = t.PointerifyMap(data.(field.Map))
+	//	//fmt.Println(data)
+	//	t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//	t.data = append(t.data, data.Bytes()...)
+	//} else {
+	//	if ptr, f := t.dataMap[fmt.Sprintf("%x",data)]; !f {
+	//		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//		t.data = append(t.data, data.Bytes()...)
+	//	} else {
+	//		p := field.Pointer(ptr)
+	//		t.dataMap[fmt.Sprintf("%x", p)] = len(t.data)
+	//		t.data = append(t.data, p.Bytes()...)
+	//	}
+	//}
 
 	//if dataPointer, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
 	//	t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
@@ -123,9 +128,29 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 	//	}
 	//}
 	id := big.NewInt(int64(uint32(t.dataMap[fmt.Sprintf("%x", data.String())])))
+	//fmt.Println("data", data.String(), fmt.Sprintf("%x", data.String()), id)
 	currentNode.SetData(data)
 	currentNode.SetId(&id)
 
+}
+
+func (t *Trie) addData(data field.Field) field.Field {
+
+	// Pointerify the map first
+	//fmt.Println("data1", data, len(t.data))
+	if data.Type() == field.MapField {
+		data = t.PointerifyMap(data.(field.Map))
+	}
+	//fmt.Println("data2", data, len(t.data))
+
+	if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
+		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+		t.data = append(t.data, data.Bytes()...)
+	}
+
+	return data
+	//		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//		t.data = append(t.data, data.Bytes()...)
 }
 
 func (t *Trie) Finalise() {
@@ -150,6 +175,7 @@ func (t *Trie) _finalise(parent **node.Node, nid *int64) {
 		right := n.Right
 		// Prune where two child nodes are the same
 		if left != nil && right != nil && left.Data() != nil && right.Data() != nil && left.Data().String() == right.Data().String() {
+			//fmt.Println("merge", left.Data().String(), right.Data().String())
 			//fmt.Println("found a node that can be removed")
 			//fmt.Println("parent", *parent)
 			*parent = node.NewNode()
@@ -307,15 +333,25 @@ func (t Trie) Bytes() []byte {
 	return bytes
 }
 
-func (t Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
+func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 
 	m2 := make(map[field.Field]field.Field)
 	for k, v := range m {
-
+		//fmt.Println("k", k, "v", v)
 		var keyField field.Field
 		var valField field.Field
 
 		//fmt.Println(t.dataMap, fmt.Sprintf("%x", k.String()), fmt.Sprintf("%x", v.String()))
+
+		if _, f := t.dataMap[fmt.Sprintf("%x", k.String())]; !f {
+			t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
+			t.data = append(t.data, k.Bytes()...)
+		}
+
+		if _, f := t.dataMap[fmt.Sprintf("%x", v.String())]; !f {
+			t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
+			t.data = append(t.data, v.Bytes()...)
+		}
 
 		if key, f := t.dataMap[fmt.Sprintf("%x", k.String())]; f {
 			keyField = field.Pointer(key)
@@ -328,6 +364,9 @@ func (t Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 		} else {
 			valField = v
 		}
+
+		//fmt.Println("keyfield", keyField, "valfield", valField)
+
 		m2[keyField] = valField
 
 	}
