@@ -85,25 +85,25 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 		}
 	}
 
-	if data.Type() == field.MapField {
-		for k, v := range data.(field.Map) {
-			if _, f := t.dataMap[fmt.Sprintf("%x", k)]; !f {
-				t.dataMap[fmt.Sprintf("%x", k)] = len(t.data)
-				t.data = append(t.data, k.Bytes()...)
-			}
-			if _, f := t.dataMap[fmt.Sprintf("%x", v)]; !f {
-				t.dataMap[fmt.Sprintf("%x", v)] = len(t.data)
-				t.data = append(t.data, v.Bytes()...)
-			}
-		}
-		data = t.PointerifyMap(data.(field.Map))
-		//fmt.Println(data)
+	//if data.Type() == field.MapField {
+	//	for k, v := range data.(field.Map) {
+	//		if _, f := t.dataMap[fmt.Sprintf("%x", k)]; !f {
+	//			t.dataMap[fmt.Sprintf("%x", k)] = len(t.data)
+	//			t.data = append(t.data, k.Bytes()...)
+	//		}
+	//		if _, f := t.dataMap[fmt.Sprintf("%x", v)]; !f {
+	//			t.dataMap[fmt.Sprintf("%x", v)] = len(t.data)
+	//			t.data = append(t.data, v.Bytes()...)
+	//		}
+	//	}
+	//	data = t.PointerifyMap(data.(field.Map))
+	//	//fmt.Println(data)
+	//	t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+	//	t.data = append(t.data, data.Bytes()...)
+	//} else {
 		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
 		t.data = append(t.data, data.Bytes()...)
-	} else {
-		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
-		t.data = append(t.data, data.Bytes()...)
-	}
+	//}
 
 	//if dataPointer, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
 	//	t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
