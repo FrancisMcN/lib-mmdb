@@ -16,66 +16,77 @@ func main() {
 	db := mmdb.NewMMDB()
 	t := trie.NewTrie()
 	db.PrefixTree = t
-	_, c, _ := net.ParseCIDR("1.1.1.0/24")
-	c.IP = c.IP.To16()
-	c.IP[len(c.IP)-1-4] = 0
-	c.IP[len(c.IP)-1-5] = 0
-	//m := make(map[field.Field]field.Field)
-	//m[field.String("test")] = field.String("hello world")
-	//t.Insert(c, field.Map(m))
-	t.Insert(c, field.String("hello world"))
 
-	_, c, _ = net.ParseCIDR("1.1.0.0/24")
-	c.IP = c.IP.To16()
-	c.IP[len(c.IP)-1-4] = 0
-	c.IP[len(c.IP)-1-5] = 0
-	//m = make(map[field.Field]field.Field)
-	//m[field.String("test")] = field.String("hello world")
-	//t.Insert(c, field.Map(m))
-	t.Insert(c, field.String("hello world"))
-
-	_, c, _ = net.ParseCIDR("2.1.0.0/24")
-	c.IP = c.IP.To16()
-	c.IP[len(c.IP)-1-4] = 0
-	c.IP[len(c.IP)-1-5] = 0
-	//m = make(map[field.Field]field.Field)
-	//m[field.String("test")] = field.String("hello world")
-	//m[field.String("abc")] = field.String("xyz")
-	//m[field.String("def")] = field.String("francis")
-	//m[field.String("test")] = field.String("hello world")
-	//m[field.String("123")] = field.String("456")
-	//t.Insert(c, field.Map(m))
-	t.Insert(c, field.String("hello world"))
-
-	_, c, _ = net.ParseCIDR("1.1.0.0/32")
+	_, c, _ := net.ParseCIDR("1.0.0.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
 	m := make(map[field.Field]field.Field)
-	m[field.String("test")] = field.String("abc /32")
-	m[field.String("francis")] = field.String("mcnamee")
-	m[field.String("hello world")] = field.String("123")
+	m[field.String("country")] = field.String("AU")
 	t.Insert(c, field.Map(m))
-	//t.Insert(c, field.String("hello /32"))
+	//t.Insert(c, field.String("hello world"))
 
-	_, c, _ = net.ParseCIDR("5.1.0.0/32")
-	c.IP = c.IP.To16()
-	c.IP[len(c.IP)-1-4] = 0
-	c.IP[len(c.IP)-1-5] = 0
+
+	//_, c, _ := net.ParseCIDR("1.1.1.0/24")
+	//c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
+	////m := make(map[field.Field]field.Field)
+	////m[field.String("test")] = field.String("hello world")
+	////t.Insert(c, field.Map(m))
+	//t.Insert(c, field.String("hello world"))
+	//
+	//_, c, _ = net.ParseCIDR("1.1.0.0/24")
+	//c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
+	////m = make(map[field.Field]field.Field)
+	////m[field.String("test")] = field.String("hello world")
+	////t.Insert(c, field.Map(m))
+	//t.Insert(c, field.String("hello world"))
+	//
+	//_, c, _ = net.ParseCIDR("2.1.0.0/24")
+	//c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
+	////m = make(map[field.Field]field.Field)
+	////m[field.String("test")] = field.String("hello world")
+	////m[field.String("abc")] = field.String("xyz")
+	////m[field.String("def")] = field.String("francis")
+	////m[field.String("test")] = field.String("hello world")
+	////m[field.String("123")] = field.String("456")
+	////t.Insert(c, field.Map(m))
+	//t.Insert(c, field.String("hello world"))
+	//
+	//_, c, _ = net.ParseCIDR("1.1.0.0/32")
+	//c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
+	//m := make(map[field.Field]field.Field)
+	//m[field.String("test")] = field.String("abc /32")
+	//m[field.String("francis")] = field.String("mcnamee")
+	//m[field.String("hello world")] = field.String("123")
+	//t.Insert(c, field.Map(m))
+	////t.Insert(c, field.String("hello /32"))
+	//
+	//_, c, _ = net.ParseCIDR("5.1.0.0/32")
+	//c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
+	////m = make(map[field.Field]field.Field)
+	////m[field.String("test")] = field.String("abc /32")
+	////t.Insert(c, field.Map(m))
+	//t.Insert(c, field.String("abc /32"))
+	//
+	//_, c, _ = net.ParseCIDR("10.0.0.0/24")
+	//c.IP = c.IP.To16()
+	//c.IP[len(c.IP)-1-4] = 0
+	//c.IP[len(c.IP)-1-5] = 0
 	//m = make(map[field.Field]field.Field)
 	//m[field.String("test")] = field.String("abc /32")
+	//m[field.String("francis")] = field.String("123")
 	//t.Insert(c, field.Map(m))
-	t.Insert(c, field.String("abc /32"))
-
-	_, c, _ = net.ParseCIDR("10.0.0.0/24")
-	c.IP = c.IP.To16()
-	c.IP[len(c.IP)-1-4] = 0
-	c.IP[len(c.IP)-1-5] = 0
-	m = make(map[field.Field]field.Field)
-	m[field.String("test")] = field.String("abc /32")
-	m[field.String("francis")] = field.String("123")
-	t.Insert(c, field.Map(m))
-	//t.Insert(c, field.String("francis"))
+	////t.Insert(c, field.String("francis"))
 
 	//_, c, _ = net.ParseCIDR("1.1.0.0/32")
 	//c.IP = c.IP.To16()
