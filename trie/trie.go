@@ -101,8 +101,14 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
 		t.data = append(t.data, data.Bytes()...)
 	} else {
-		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
-		t.data = append(t.data, data.Bytes()...)
+		if ptr, f := t.dataMap[fmt.Sprintf("%x",data)]; !f {
+			t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
+			t.data = append(t.data, data.Bytes()...)
+		} else {
+			p := field.Pointer(ptr)
+			t.dataMap[fmt.Sprintf("%x", p)] = len(t.data)
+			t.data = append(t.data, p.Bytes()...)
+		}
 	}
 
 	//if dataPointer, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
