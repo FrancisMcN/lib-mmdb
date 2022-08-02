@@ -152,12 +152,12 @@ func (t *Trie) addData(data field.Field) field.Field {
 		for k, v := range data.(field.Map) {
 
 			if _, f := t.dataMap[fmt.Sprintf("%x", k.String())]; !f {
-				t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
+				//t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
 				//t.data = append(t.data, k.Bytes()...)
 			}
 
 			if _, f := t.dataMap[fmt.Sprintf("%x", v.String())]; !f {
-				t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
+				//t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
 				//t.data = append(t.data, v.Bytes()...)
 			}
 		}
@@ -351,6 +351,7 @@ func (t Trie) Bytes() []byte {
 func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 
 	m2 := make(map[field.Field]field.Field)
+	mapOffset := 1
 	for k, v := range m {
 		//fmt.Println("k", k, "v", v)
 		var keyField field.Field
@@ -362,8 +363,10 @@ func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 			keyField = field.Pointer(key)
 		} else {
 			keyField = k
+			t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data) + mapOffset
 		}
-
+		//fmt.Println(mapOffset, keyField, keyField.Bytes())
+		mapOffset += len(keyField.Bytes())
 		//if _, f := t.dataMap[fmt.Sprintf("%x", k.String())]; !f {
 		//	t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
 		//	t.data = append(t.data, k.Bytes()...)
@@ -373,8 +376,10 @@ func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 			valField = field.Pointer(val)
 		} else {
 			valField = v
+			t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data) + mapOffset
 		}
-
+		//fmt.Println(mapOffset, valField)
+		mapOffset += len(valField.Bytes())
 		//if _, f := t.dataMap[fmt.Sprintf("%x", v.String())]; !f {
 		//	t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
 		//	t.data = append(t.data, v.Bytes()...)
@@ -385,6 +390,7 @@ func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 		m2[keyField] = valField
 
 	}
+	fmt.Println("----")
 
 	return m2
 }

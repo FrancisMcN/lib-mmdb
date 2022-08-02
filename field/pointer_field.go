@@ -97,31 +97,104 @@ func (p Pointer) Resolve(b []byte) Field {
 
 func (p Pointer) Bytes() []byte {
 
-	b := make([]byte, 1)
-	b[0] = 0b0010_0000
-	b[0] |= 0b0000_0111
-	if p <= 255 {
-		b = append(b, 0)
-		if p < 7 {
-			b[0] &= byte(p)
-			b[0] |= 0b0010_0000
-		} else {
-			b[1] = byte(p) - 7
+	//pointerSize := (uint32(p) & 0b0001_1000) >> 3
+	//switch pointerSize {
+	//case 1:
+	// 11 bit pointer
+	if p <= 2_048 {
+
+		b := make([]byte, 0)
+		b = append(b, 0b0010_0111, 0b1111_1111)
+		b2 := make([]byte, 2)
+		binary.BigEndian.PutUint16(b2, uint16(p))
+		for i, _ := range b2 {
+			b2[i] &= b[i]
 		}
-	} else if p >= 256 && p <= 65_535 {
-		b = append(b, 0, 0)
-		binary.BigEndian.PutUint16(b[1:], uint16(p)-7)
-		b[0] |= 0b0010_1000
-	} else if p >= 65_536 && p <= 16777215 {
-		b = append(b, 0, 0, 0, 0)
-		binary.BigEndian.PutUint32(b[1:], uint32(p)-7)
-		b = append(b[:1], b[2:]...)
-		b[0] |= 0b0011_0000
-	} else {
-		b = append(b, 0, 0, 0, 0)
-		binary.BigEndian.PutUint32(b[1:], uint32(p)-7)
-		b[0] |= 0b0011_1000
+		b2[0] |= 0b0010_0000
+		//fmt.Println(fmt.Sprintf("%08b", b2))
+		return b2
+	}
+	//case 2:
+	// 19 bit pointer
+	if p < 526_336 {
+
+		b := make([]byte, 0)
+		b = append(b, 0, 0b0010_0111, 0b1111_1111, 0b1111_1111)
+		b2 := make([]byte, 4)
+		binary.BigEndian.PutUint32(b2, uint32(p)+2_048)
+		for i, _ := range b2 {
+			b2[i] &= b[i]
+		}
+		b2[0] |= 0b0010_1000
+		return b2
 	}
 
-	return b
+	// 27 bit pointer
+	if p < 134_217_728 {
+
+		b := make([]byte, 0)
+		b = append(b, 0b0010_0111, 0b1111_1111, 0b1111_1111, 0b1111_1111)
+		b2 := make([]byte, 4)
+		binary.BigEndian.PutUint32(b2, uint32(p)+526_336)
+		for i, _ := range b2 {
+			b2[i] &= b[i]
+		}
+		b2[0] |= 0b0011_0000
+		return b2
+	}
+
+	b2 := make([]byte, 4)
+	binary.BigEndian.PutUint32(b2, uint32(p))
+	b2 = append([]byte{0}, b2...)
+	b2[0] |= 0b0011_1000
+	return b2
+
+	//default:
+	//	fmt.Println("pointer size: ", pointerSize, p)
+	//	b := make([]byte, 4)
+	//	b[0] = 1
+	//	return b
+		//b := make([]byte, 0)
+		//b = append(b, 0, 0b0010_0111, 0b1111_1111, 0b1111_1111)
+		//b2 := make([]byte, 4)
+		//binary.BigEndian.PutUint32(b2, uint32(p))
+		//for i, _ := range b2 {
+		//	b2[i] &= b[i]
+		//}
+		//return b2
+	//}
+	//// 11 bit pointer
+	//if p <= 2_048 {
+	//
+	//}
+	//// 19 bit pointer
+	//if p < 526_336 {
+	//
+	//}
+	//fmt.Println(b)
+	//if p <= 255 {
+	//	b = append(b, 0)
+	//	if p < 7 {
+	//		b[0] &= byte(p)
+	//		b[0] |= 0b0010_0000
+	//	} else {
+	//		b[1] = byte(p) - 7
+	//		fmt.Println(b[0], b[1])
+	//	}
+	//} else if p >= 256 && p <= 65_535 {
+	//	b = append(b, 0, 0)
+	//	binary.BigEndian.PutUint16(b[1:], uint16(p)-7)
+	//	b[0] |= 0b0010_1000
+	//} else if p >= 65_536 && p <= 16777215 {
+	//	b = append(b, 0, 0, 0, 0)
+	//	binary.BigEndian.PutUint32(b[1:], uint32(p)-7)
+	//	b = append(b[:1], b[2:]...)
+	//	b[0] |= 0b0011_0000
+	//} else {
+	//	b = append(b, 0, 0, 0, 0)
+	//	binary.BigEndian.PutUint32(b[1:], uint32(p)-7)
+	//	b[0] |= 0b0011_1000
+	//}
+	//fmt.Println("pointer value", p, "pointer bytes", b)
+	//return b
 }

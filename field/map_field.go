@@ -37,7 +37,6 @@ func MapFromBytes(b []byte, items uint32) Map {
 		//if val.Type() == PointerField {
 		//	//val = val.(Pointer).Resolve(b)
 		//}
-		//fmt.Println(key, val)
 		m[key.(String)] = val
 		//fmt.Println(m)
 	}
