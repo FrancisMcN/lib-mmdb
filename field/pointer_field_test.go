@@ -4,6 +4,21 @@ import (
 	"testing"
 )
 
+func TestPointer(t *testing.T) {
+
+	fp := FieldParserSingleton()
+	fp.SetOffset(0)
+	bytes := []byte{
+		0b0010_0000,
+		0b0000_1010,
+	}
+	p := PointerFromBytes(bytes)
+	if p != 10 {
+		t.Errorf("p = %d, test failed should be 10", p)
+	}
+
+}
+
 // Test a new size 0 pointer is created successfully
 func TestNewSizeZeroPointer(t *testing.T) {
 
