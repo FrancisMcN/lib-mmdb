@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
       - name: Checkout master
         uses: actions/checkout@main
 
