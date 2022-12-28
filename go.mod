@@ -1,3 +1,3 @@
-module github.com/FrancisMcN/lib-mmdb2
+module github.com/FrancisMcN/lib-mmdb
 
 go 1.18

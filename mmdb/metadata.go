@@ -1,7 +1,7 @@
 package mmdb
 
 import (
-	"github.com/FrancisMcN/lib-mmdb2/field"
+	"github.com/FrancisMcN/lib-mmdb/field"
 	"time"
 )
 

@@ -71,7 +71,6 @@ func PointerFromBytes(b []byte) Pointer {
 	//else:
 	//pointer = struct.unpack(b"!I", buf)[0] + self._pointer_base
 
-
 	//ptrSize := (b[offset+0] & 0b0001_1000) >> 3
 	//bytes := make([]byte, 4)
 	//ptr := uint32(0)
@@ -156,7 +155,7 @@ func (p Pointer) Resolve(b []byte) Field {
 	// pointerSize = 1, pointer requires 3 bytes
 	// pointerSize = 2, pointer requires 4 bytes
 	// pointerSize = 3, pointer requires 5 bytes
-	fp.SetOffset(off + uint32(pointerSize)+2)
+	fp.SetOffset(off + uint32(pointerSize) + 2)
 	return f
 }
 
@@ -219,14 +218,14 @@ func (p Pointer) Bytes() []byte {
 	//	b := make([]byte, 4)
 	//	b[0] = 1
 	//	return b
-		//b := make([]byte, 0)
-		//b = append(b, 0, 0b0010_0111, 0b1111_1111, 0b1111_1111)
-		//b2 := make([]byte, 4)
-		//binary.BigEndian.PutUint32(b2, uint32(p))
-		//for i, _ := range b2 {
-		//	b2[i] &= b[i]
-		//}
-		//return b2
+	//b := make([]byte, 0)
+	//b = append(b, 0, 0b0010_0111, 0b1111_1111, 0b1111_1111)
+	//b2 := make([]byte, 4)
+	//binary.BigEndian.PutUint32(b2, uint32(p))
+	//for i, _ := range b2 {
+	//	b2[i] &= b[i]
+	//}
+	//return b2
 	//}
 	//// 11 bit pointer
 	//if p <= 2_048 {

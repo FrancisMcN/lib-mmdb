@@ -2,30 +2,30 @@ package trie
 
 import (
 	"fmt"
-	"github.com/FrancisMcN/lib-mmdb2/field"
-	"github.com/FrancisMcN/lib-mmdb2/node"
+	"github.com/FrancisMcN/lib-mmdb/field"
+	"github.com/FrancisMcN/lib-mmdb/node"
 	"math/big"
 	"net"
 )
 
 type Trie struct {
-	totalId    **big.Int
-	root       *node.Node
-	dataMap    map[string]int
-	data       []byte
-	recordSize int
-	Size uint32
+	totalId     **big.Int
+	root        *node.Node
+	dataMap     map[string]int
+	data        []byte
+	recordSize  int
+	Size        uint32
 	ShouldPrune bool
 }
 
 func NewTrie() *Trie {
 	id := big.NewInt(0)
 	return &Trie{
-		totalId: &id,
-		root:    node.NewNode(),
-		dataMap: make(map[string]int),
-		data: make([]byte, 0),
-		recordSize: 28,
+		totalId:     &id,
+		root:        node.NewNode(),
+		dataMap:     make(map[string]int),
+		data:        make([]byte, 0),
+		recordSize:  28,
 		ShouldPrune: true,
 	}
 }
@@ -218,7 +218,7 @@ func (t *Trie) _finalise2(n *node.Node, nid *int64) {
 		} else {
 			d := fmt.Sprintf("%x", n.Data())
 			dataOffset, _ := t.dataMap[d]
-			id := big.NewInt(int64(uint32(dataOffset) + 16) * -1)
+			id := big.NewInt(int64(uint32(dataOffset)+16) * -1)
 			n.SetId(&id)
 		}
 		if n.Left != nil || n.Right != nil {

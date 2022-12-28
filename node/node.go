@@ -2,16 +2,16 @@ package node
 
 import (
 	"fmt"
-	"github.com/FrancisMcN/lib-mmdb2/field"
+	"github.com/FrancisMcN/lib-mmdb/field"
 	"math"
 	"math/big"
 )
 
 type Node struct {
-	id **big.Int
+	id   **big.Int
 	data field.Field
 	//cidr *net.IPNet
-	Left *Node
+	Left  *Node
 	Right *Node
 	//children [2]*Node
 }
@@ -80,7 +80,7 @@ func (n *Node) Id() **big.Int {
 	return n.id
 }
 
-func (n *Node) SetData(data field.Field){
+func (n *Node) SetData(data field.Field) {
 	n.data = data
 }
 
@@ -168,8 +168,8 @@ func (n Node) Bytes(recordSize int, initialSize uint64) []byte {
 	}
 	lBytes := l.Bytes()
 	//fmt.Println(recordSize / 8, float64(recordSize) / 8, math.Ceil(float64(recordSize) / 8))
-	if float64(len(lBytes)) < float64(recordSize) / 8 {
-		diff := int(math.Ceil(float64(recordSize) / 8)) - len(lBytes)
+	if float64(len(lBytes)) < float64(recordSize)/8 {
+		diff := int(math.Ceil(float64(recordSize)/8)) - len(lBytes)
 		lBytesNew := make([]byte, diff)
 		lBytes = append(lBytesNew, lBytes...)
 	}
@@ -183,8 +183,8 @@ func (n Node) Bytes(recordSize int, initialSize uint64) []byte {
 	//	rBytesNew := make([]byte, diff)
 	//	rBytes = append(rBytesNew, rBytes...)
 	//}
-	if float64(len(rBytes)) < float64(recordSize) / 8 {
-		diff := int(math.Ceil(float64(recordSize) / 8)) - len(rBytes)
+	if float64(len(rBytes)) < float64(recordSize)/8 {
+		diff := int(math.Ceil(float64(recordSize)/8)) - len(rBytes)
 		rBytesNew := make([]byte, diff)
 		rBytes = append(rBytesNew, rBytes...)
 	}
@@ -213,4 +213,3 @@ func (n Node) Bytes(recordSize int, initialSize uint64) []byte {
 	}
 	return b
 }
-

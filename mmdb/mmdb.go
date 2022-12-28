@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/FrancisMcN/lib-mmdb2/field"
-	"github.com/FrancisMcN/lib-mmdb2/node"
-	"github.com/FrancisMcN/lib-mmdb2/trie"
+	"github.com/FrancisMcN/lib-mmdb/field"
+	"github.com/FrancisMcN/lib-mmdb/node"
+	"github.com/FrancisMcN/lib-mmdb/trie"
 	"log"
 	"net"
 	"time"
@@ -92,7 +92,7 @@ func (m MMDB) Query(ip net.IP) field.Field {
 
 	offset := uint32(0)
 	nid := uint32(0)
-	for i := 0; i < 128 && nid < nodeCount /* && offset+uint32(nodeBytes) < uint32(len(m.Bst)) */; i++ {
+	for i := 0; i < 128 && nid < nodeCount; /* && offset+uint32(nodeBytes) < uint32(len(m.Bst)) */ i++ {
 		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
 
 		//if !isSet(ip, i) {

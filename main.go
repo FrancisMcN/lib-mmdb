@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/FrancisMcN/lib-mmdb2/field"
-	"github.com/FrancisMcN/lib-mmdb2/mmdb"
-	"github.com/FrancisMcN/lib-mmdb2/trie"
+	"github.com/FrancisMcN/lib-mmdb/field"
+	"github.com/FrancisMcN/lib-mmdb/mmdb"
+	"github.com/FrancisMcN/lib-mmdb/trie"
 	"io/ioutil"
 	"log"
 	"net"
@@ -49,7 +49,6 @@ func main() {
 	m[field.String("country2")] = field.String("US")
 	t.Insert(c, field.Map(m))
 	//t.Insert(c, field.String("hello world"))
-
 
 	_, c, _ = net.ParseCIDR("1.0.4.0/24")
 	c.IP = c.IP.To16()
