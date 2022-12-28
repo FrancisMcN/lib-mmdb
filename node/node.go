@@ -8,32 +8,23 @@ import (
 )
 
 type Node struct {
-	id   **big.Int
-	data field.Field
-	//cidr *net.IPNet
+	id    **big.Int
+	data  field.Field
 	Left  *Node
 	Right *Node
-	//children [2]*Node
 }
 
 func NewNode() *Node {
 	id := big.NewInt(0)
 	return &Node{
 		id: &id,
-		//children: [2]*Node{},
 	}
 }
-
-//func (n *Node) Cidr() *net.IPNet {
-//	return n.cidr
-//}
 
 func (n *Node) String() string {
 	id := big.NewInt(0)
 	data := ""
-	//if n.id == nil {
-	//	return fmt.Sprintf("id: 0")
-	//}
+
 	if n.id != nil {
 		id = *n.id
 	}
@@ -52,25 +43,13 @@ func (n *Node) String() string {
 	return fmt.Sprintf("id: %s (%s, %s) %s", id, left, right, data)
 }
 
-//func (n *Node) SetChildren(children [2]*Node) {
-//	n.children = children
-//}
-
 func (n *Node) SetLeft(left *Node) {
 	n.Left = left
 }
 
-//func (n *Node) Left() *Node {
-//	return n.right
-//}
-
 func (n *Node) SetRight(right *Node) {
 	n.Right = right
 }
-
-//func (n *Node) Right() *Node {
-//	return n.right
-//}
 
 func (n *Node) SetId(id **big.Int) {
 	n.id = id
@@ -158,16 +137,13 @@ func FromBytes(bytes []byte, recordSize uint16) [2]*big.Int {
 
 func (n Node) Bytes(recordSize int, initialSize uint64) []byte {
 
-	//if n.Id.Uint64() == 104 {
-	//	fmt.Println(n)
-	//}
 	b := make([]byte, 0)
 	var l = big.NewInt(int64(initialSize))
 	if n.Left != nil {
 		l = *n.Left.Id()
 	}
 	lBytes := l.Bytes()
-	//fmt.Println(recordSize / 8, float64(recordSize) / 8, math.Ceil(float64(recordSize) / 8))
+
 	if float64(len(lBytes)) < float64(recordSize)/8 {
 		diff := int(math.Ceil(float64(recordSize)/8)) - len(lBytes)
 		lBytesNew := make([]byte, diff)
@@ -178,11 +154,7 @@ func (n Node) Bytes(recordSize int, initialSize uint64) []byte {
 		r = *n.Right.Id()
 	}
 	rBytes := r.Bytes()
-	//if len(rBytes) < recordSize/8 {
-	//	diff := recordSize/8 - len(rBytes)
-	//	rBytesNew := make([]byte, diff)
-	//	rBytes = append(rBytesNew, rBytes...)
-	//}
+
 	if float64(len(rBytes)) < float64(recordSize)/8 {
 		diff := int(math.Ceil(float64(recordSize)/8)) - len(rBytes)
 		rBytesNew := make([]byte, diff)
