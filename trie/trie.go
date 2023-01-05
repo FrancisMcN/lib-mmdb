@@ -242,7 +242,7 @@ func (t Trie) Bytes() []byte {
 func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 
 	m2 := make(map[field.Field]field.Field)
-	mapOffset := 0
+	mapOffset := 1
 	for k, v := range m {
 		var keyField field.Field
 		var valField field.Field
