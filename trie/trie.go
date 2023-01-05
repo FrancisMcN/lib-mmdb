@@ -96,7 +96,7 @@ func (t *Trie) addData(data field.Field) field.Field {
 
 	// Pointerify the map first
 	if data.Type() == field.MapField {
-		data = t.PointerifyMap(data.(field.Map))
+		//data = t.PointerifyMap(data.(field.Map))
 	}
 
 	if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
