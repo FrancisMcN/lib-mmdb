@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/FrancisMcN/lib-mmdb/field"
 	"github.com/FrancisMcN/lib-mmdb/node"
-	"log"
 	"math/big"
 	"net"
 )
@@ -97,8 +96,7 @@ func (t *Trie) addData(data field.Field) field.Field {
 
 	// Pointerify the map first
 	if data.Type() == field.MapField {
-		log.Println("ran pointerify")
-		t.PointerifyMap(data.(field.Map))
+		data = t.PointerifyMap(data.(field.Map))
 	}
 
 	if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
