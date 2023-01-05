@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/FrancisMcN/lib-mmdb/field"
 	"github.com/FrancisMcN/lib-mmdb/node"
+	"log"
 	"math/big"
 	"net"
 )
@@ -96,7 +97,8 @@ func (t *Trie) addData(data field.Field) field.Field {
 
 	// Pointerify the map first
 	if data.Type() == field.MapField {
-		data = t.PointerifyMap(data.(field.Map))
+		log.Println("ran pointerify")
+		t.PointerifyMap(data.(field.Map))
 	}
 
 	if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
@@ -104,20 +106,20 @@ func (t *Trie) addData(data field.Field) field.Field {
 		t.data = append(t.data, data.Bytes()...)
 	}
 
-	if data.Type() == field.MapField {
-		for k, v := range data.(field.Map) {
-
-			if _, f := t.dataMap[fmt.Sprintf("%x", k.String())]; !f {
-				//t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
-				//t.data = append(t.data, k.Bytes()...)
-			}
-
-			if _, f := t.dataMap[fmt.Sprintf("%x", v.String())]; !f {
-				//t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
-				//t.data = append(t.data, v.Bytes()...)
-			}
-		}
-	}
+	//if data.Type() == field.MapField {
+	//	for k, v := range data.(field.Map) {
+	//
+	//		if _, f := t.dataMap[fmt.Sprintf("%x", k.String())]; !f {
+	//			//t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
+	//			//t.data = append(t.data, k.Bytes()...)
+	//		}
+	//
+	//		if _, f := t.dataMap[fmt.Sprintf("%x", v.String())]; !f {
+	//			//t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
+	//			//t.data = append(t.data, v.Bytes()...)
+	//		}
+	//	}
+	//}
 
 	return data
 }
