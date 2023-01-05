@@ -23,7 +23,7 @@ func MapFromBytes(b []byte, items uint32) Map {
 		//fmt.Println("fp.offset", fp.offset)
 		//fmt.Println(m)
 		key := fp.Parse(b)
-		//fmt.Println("key", key)
+		fmt.Println("key", key)
 		//fmt.Println("key", key)
 		//if key.Type() == PointerField {
 		//	//key = key.(Pointer).Resolve(b)
@@ -32,7 +32,7 @@ func MapFromBytes(b []byte, items uint32) Map {
 		//fmt.Println("-----")
 		//fmt.Println(fp.offset, fmt.Sprintf("%x", b[fp.offset:int(math.Min(float64(len(b)), float64(fp.offset+10)))]))
 		val := fp.Parse(b)
-		//fmt.Println("val", val)
+		fmt.Println("val", val)
 		//fmt.Println("val", val)
 		//if val.Type() == PointerField {
 		//	//val = val.(Pointer).Resolve(b)
