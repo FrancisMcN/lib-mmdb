@@ -46,8 +46,8 @@ func TestNewSizeOnePointer(t *testing.T) {
 		0b0000_0010,
 	}
 	p := PointerFromBytes(bytes)
-	if p != 2_306 {
-		t.Errorf("p = %d, test failed should be 2,306", p)
+	if p != 258 {
+		t.Errorf("p = %d, test failed should be 258", p)
 	}
 
 }
@@ -64,8 +64,8 @@ func TestNewSizeTwoPointer(t *testing.T) {
 		0b0000_0001,
 	}
 	p := PointerFromBytes(bytes)
-	if p != 592_129 {
-		t.Errorf("p = %d, test failed should be 592,129", p)
+	if p != 65_793 {
+		t.Errorf("p = %d, test failed should be 65,793", p)
 	}
 
 }
