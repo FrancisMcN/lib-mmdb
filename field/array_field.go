@@ -12,13 +12,8 @@ func ArrayFromBytes(b []byte, length uint32) Array {
 	fp := FieldParserSingleton()
 	// Skip past the control byte
 	fp.offset += 1
-	//fmt.Println(b[fp.offset:fp.offset+10], fmt.Sprintf("%x", b[fp.offset:fp.offset+10]))
-	//fmt.Println(fp.offset)
-	//fmt.Println(fmt.Sprintf("%x", b[fp.offset:]))
 	array := make([]Field, 0)
 	for i := uint32(0); i < length; i++ {
-		//fmt.Println(fmt.Sprintf("x = %x, b = %x", b[fp.offset:fp.offset+5], b[:]))
-		//fmt.Println("test", fmt.Sprintf("%x", b[fp.offset:fp.offset+10]), b[fp.offset:fp.offset+10])
 		f := fp.Parse(b)
 		array = append(array, f)
 	}

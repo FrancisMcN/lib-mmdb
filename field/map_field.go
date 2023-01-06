@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	// "math"
 )
 
 type Map map[Field]Field
@@ -12,7 +13,8 @@ type Map map[Field]Field
 func MapFromBytes(b []byte, items uint32) Map {
 
 	fp := FieldParserSingleton()
-	//fmt.Println(fmt.Sprintf("x: %x", b[fp.offset]))
+	// fmt.Println("map offset: ", fp.offset)
+	// fmt.Println(fmt.Sprintf("x: %x", b[int(math.Min(float64(fp.offset-5), 0)):fp.offset + 5]))
 	// Skip past the control byte
 	fp.offset += 1
 
@@ -23,7 +25,7 @@ func MapFromBytes(b []byte, items uint32) Map {
 		//fmt.Println("fp.offset", fp.offset)
 		//fmt.Println(m)
 		key := fp.Parse(b)
-		fmt.Println("key", key)
+		// fmt.Println("key", key)
 		//fmt.Println("key", key)
 		//if key.Type() == PointerField {
 		//	//key = key.(Pointer).Resolve(b)
@@ -32,7 +34,7 @@ func MapFromBytes(b []byte, items uint32) Map {
 		//fmt.Println("-----")
 		//fmt.Println(fp.offset, fmt.Sprintf("%x", b[fp.offset:int(math.Min(float64(len(b)), float64(fp.offset+10)))]))
 		val := fp.Parse(b)
-		fmt.Println("val", val)
+		// fmt.Println("val", val)
 		//fmt.Println("val", val)
 		//if val.Type() == PointerField {
 		//	//val = val.(Pointer).Resolve(b)
@@ -108,7 +110,6 @@ func (m Map) Bytes() []byte {
 	for k, v := range m {
 		b = append(b, k.Bytes()...)
 		b = append(b, v.Bytes()...)
-		//fmt.Println(k, v)
 	}
 
 	return b

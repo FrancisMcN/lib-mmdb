@@ -97,9 +97,15 @@ func (t *Trie) addData(data field.Field) field.Field {
 	// Pointerify the map first
 	if data.Type() == field.MapField {
 		data = t.PointerifyMap(data.(field.Map))
+	} else if data.Type() == field.ArrayField {
+		data = t.PointerifyArray(data.(field.Array))
 	}
 
 	if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
+		// l := len(t.data)
+		// if len(t.data) == 0 {
+		// 	l = 0
+		// }
 		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
 		t.data = append(t.data, data.Bytes()...)
 	}
@@ -246,28 +252,50 @@ func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
 	for k, v := range m {
 		var keyField field.Field
 		var valField field.Field
-
-		if key, f := t.dataMap[fmt.Sprintf("%x", k.String())]; f {
+		// fmt.Println(k, v, fmt.Sprintf("%x", k.Bytes()))
+		if key, f := t.dataMap[fmt.Sprintf("%x", k.Bytes())]; f {
+			// fmt.Println(fmt.Sprintf("found %x in dataMap, pointer is", k.Bytes()), field.Pointer(key))
 			keyField = field.Pointer(key)
 		} else {
 			keyField = k
-			t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data) + mapOffset
+			t.dataMap[fmt.Sprintf("%x", k.Bytes())] = len(t.data) + mapOffset
 		}
 		mapOffset += len(keyField.Bytes())
 
-		if val, f := t.dataMap[fmt.Sprintf("%x", v.String())]; f {
+		if val, f := t.dataMap[fmt.Sprintf("%x", v.Bytes())]; f {
 			valField = field.Pointer(val)
 		} else {
 			valField = v
-			t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data) + mapOffset
+			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data) + mapOffset
 		}
 		mapOffset += len(valField.Bytes())
+
+		// fmt.Println(keyField, valField)
 
 		m2[keyField] = valField
 
 	}
 
 	return m2
+}
+
+func (t *Trie) PointerifyArray(a []field.Field) field.Array {
+	arr := make([]field.Field, 0)
+	arrOffset := 2
+	for _, v := range a {
+		var valField field.Field
+
+		if key, f := t.dataMap[fmt.Sprintf("%x", v.Bytes())]; f {
+			valField = field.Pointer(key)
+		} else {
+			valField = v
+			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data) + arrOffset
+		}
+		arrOffset += len(valField.Bytes())
+		arr = append(arr, valField)
+
+	}
+	return arr
 }
 
 // Determines if the 'bit' in the IP is set
