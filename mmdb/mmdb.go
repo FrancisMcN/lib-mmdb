@@ -79,6 +79,14 @@ func (m *MMDB) Load(b []byte) {
 	fmt.Printf("%s\n", string(dbJson))
 }
 
+func (m MMDB) Insert(cidr *net.IPNet, data field.Field) {
+	m.PrefixTree.Insert(cidr, data)
+}
+
+func (m MMDB) Finalise() {
+	m.PrefixTree.Finalise()
+}
+
 func (m MMDB) Query(ip net.IP) field.Field {
 
 	//ip[len(ip)-1-4] = 0
@@ -115,7 +123,6 @@ func (m MMDB) Query(ip net.IP) field.Field {
 	if nid > nodeCount {
 		fp := field.FieldParserSingleton()
 		dataOffset := (offset / uint32(nodeBytes)) - nodeCount - 16
-		//fmt.Println(offset / uint32(nodeBytes), m.metadata.NodeCount, dataOffset)
 		fp.SetOffset(dataOffset)
 		return fp.Parse(m.Data)
 	}
@@ -135,7 +142,7 @@ func (m MMDB) PrintMetadata() {
 }
 
 func (m MMDB) Bytes() []byte {
-
+	m.Finalise()
 	b := m.PrefixTree.Bytes()
 	m.metadata.NodeCount = m.PrefixTree.Size
 	b = append(b, m.metadata.Bytes()...)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/FrancisMcN/lib-mmdb/field"
 	"github.com/FrancisMcN/lib-mmdb/mmdb"
-	"github.com/FrancisMcN/lib-mmdb/trie"
 	"io/ioutil"
 	"log"
 	"net"
@@ -14,17 +13,14 @@ import (
 
 func main() {
 	db := mmdb.NewMMDB()
-	t := trie.NewTrie()
-	db.PrefixTree = t
 
 	_, c, _ := net.ParseCIDR("1.0.0.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	//m := make(map[field.Field]field.Field)
 	m := field.NewMap()
 	m.Put(field.String("country"), field.String("AU"))
-	t.Insert(c, m)
+	db.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.1.0/24")
 	c.IP = c.IP.To16()
@@ -32,7 +28,7 @@ func main() {
 	c.IP[len(c.IP)-1-5] = 0
 	m = field.NewMap()
 	m.Put(field.String("country"), field.String("CN"))
-	t.Insert(c, m)
+	db.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.2.0/24")
 	c.IP = c.IP.To16()
@@ -40,17 +36,16 @@ func main() {
 	c.IP[len(c.IP)-1-5] = 0
 	m = field.NewMap()
 	m.Put(field.String("country"), field.String("JP"))
-	t.Insert(c, m)
+	db.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.3.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	//m = make(map[field.Field]field.Field)
+
 	m = field.NewMap()
 	m.Put(field.String("country2"), field.String("US"))
-	t.Insert(c, m)
-	//t.Insert(c, field.String("hello world"))
+	db.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.4.0/24")
 	c.IP = c.IP.To16()
@@ -58,7 +53,7 @@ func main() {
 	c.IP[len(c.IP)-1-5] = 0
 	m = field.NewMap()
 	m.Put(field.String("country2"), field.String("US"))
-	t.Insert(c, m)
+	db.Insert(c, m)
 
 	//_, c, _ := net.ParseCIDR("1.1.1.0/24")
 	//c.IP = c.IP.To16()
@@ -135,10 +130,6 @@ func main() {
 	//c.IP = c.IP.To16()
 	//t.Insert(c, field.String("hello1"))
 
-	//t.Print()
-	//fmt.Println("----")
-	t.Finalise()
-	//t.Print()
 	err := ioutil.WriteFile("test.mmdb", db.Bytes(), 0644)
 	if err != nil {
 		log.Fatal(err)

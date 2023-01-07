@@ -94,36 +94,14 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 
 func (t *Trie) addData(data field.Field) field.Field {
 
-	// } else if data.Type() == field.ArrayField {
-	// 	data = t.PointerifyArray(data.(field.Array))
-	// }
-
-	// Pointerify the map first
 	if data.Type() == field.MapField {
 		data = t.PointerifyMap(data.(*field.Map))
+	} else if data.Type() == field.ArrayField {
+		data = t.PointerifyArray(data.(field.Array))
 	} else if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
-		// l := len(t.data)
-		// if len(t.data) == 0 {
-		// 	l = 0
-		// }
 		t.dataMap[fmt.Sprintf("%x", data)] = len(t.data)
 		t.data = append(t.data, data.Bytes()...)
 	}
-
-	//if data.Type() == field.MapField {
-	//	for k, v := range data.(field.Map) {
-	//
-	//		if _, f := t.dataMap[fmt.Sprintf("%x", k.String())]; !f {
-	//			//t.dataMap[fmt.Sprintf("%x", k.String())] = len(t.data)
-	//			//t.data = append(t.data, k.Bytes()...)
-	//		}
-	//
-	//		if _, f := t.dataMap[fmt.Sprintf("%x", v.String())]; !f {
-	//			//t.dataMap[fmt.Sprintf("%x", v.String())] = len(t.data)
-	//			//t.data = append(t.data, v.Bytes()...)
-	//		}
-	//	}
-	//}
 
 	return data
 }
@@ -137,9 +115,6 @@ func (t *Trie) Finalise() {
 	t._finalise3(t.root, nid)
 	(*t.totalId).Set(big.NewInt(nid))
 	t.Size = uint32(nid)
-	// for k, v := range t.dataMap {
-	// 	t.dataMap[k] = v + int(nid) + 16
-	// }
 }
 
 func (t *Trie) _finalise(parent **node.Node, nid *int64) {
@@ -251,31 +226,17 @@ func (t Trie) Bytes() []byte {
 func (t *Trie) PointerifyMap(m *field.Map) *field.Map {
 
 	m2 := field.NewMap()
-	// m2 := make(map[field.Field]field.Field)
 	offset := 1
 
-	// keys := make([]string, 0)
-	// keyvals := make([]field.Field, 0)
-	// for k, _ := range m {
-	// 	keys = append(keys, k.String())
-	// 	keyvals = append(keyvals, k)
-	// }
-	// sort.Strings(keys)
-	// sort.Ints(keys)
-
-	// for i, _ := range keys {
 	for _, k := range m.OrderedKeys {
 		var kf field.Field
-		// fmt.Println("key", k)
 		if key, f := t.dataMap[fmt.Sprintf("%x", k.Bytes())]; f {
 			kf = field.Pointer(key)
 		} else {
 			kf = k
 			t.dataMap[fmt.Sprintf("%x", k.Bytes())] = len(t.data) + offset
 		}
-		// if len(kf.Bytes()) == 0 {
-		// 	panic("dfjhdjf")
-		// }
+
 		offset += len(kf.Bytes())
 
 		v := m.InternalMap[k]
@@ -286,21 +247,14 @@ func (t *Trie) PointerifyMap(m *field.Map) *field.Map {
 			vf = v
 			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data) + offset
 		}
-		// fmt.Println("data + offset", len(t.data) + offset, "val:", v, vf, "map:", t.dataMap[fmt.Sprintf("%x", v.Bytes())], t.dataMap[fmt.Sprintf("%x", vf.Bytes())])
 		offset += len(vf.Bytes())
-		// if len(kf.Bytes()) == 0 {
-		// 	panic("dfjhdjf")
-		// }
-		// m2[kf] = vf
+
 		m2.Put(kf, vf)
 
 	}
 
-	// fmt.Println("m2", m2, m2.Size())
-
 	t.dataMap[fmt.Sprintf("%x", m2)] = len(t.data)
 	t.data = append(t.data, m2.Bytes()...)
-	// fmt.Println("m bytes", fmt.Sprintf("%x", field.Map(m2).Bytes()))
 
 	return m2
 }
