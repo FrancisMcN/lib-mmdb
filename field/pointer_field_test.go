@@ -6,7 +6,7 @@ import (
 
 func TestPointer(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b0010_0000,
@@ -22,7 +22,7 @@ func TestPointer(t *testing.T) {
 // Test a new size 0 pointer is created successfully
 func TestNewSizeZeroPointer(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b0010_0000,
@@ -38,7 +38,7 @@ func TestNewSizeZeroPointer(t *testing.T) {
 // Test a new size one pointer is created successfully
 func TestNewSizeOnePointer(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b0010_1000,
@@ -46,8 +46,8 @@ func TestNewSizeOnePointer(t *testing.T) {
 		0b0000_0010,
 	}
 	p := PointerFromBytes(bytes)
-	if p != 258 {
-		t.Errorf("p = %d, test failed should be 258", p)
+	if p != 2_306 {
+		t.Errorf("p = %d, test failed should be 2,306", p)
 	}
 
 }
@@ -55,7 +55,7 @@ func TestNewSizeOnePointer(t *testing.T) {
 // Test a new size two pointer is created successfully
 func TestNewSizeTwoPointer(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b0011_0000,
@@ -64,8 +64,8 @@ func TestNewSizeTwoPointer(t *testing.T) {
 		0b0000_0001,
 	}
 	p := PointerFromBytes(bytes)
-	if p != 65_793 {
-		t.Errorf("p = %d, test failed should be 65,793", p)
+	if p != 592_129 {
+		t.Errorf("p = %d, test failed should be 592,129", p)
 	}
 
 }
@@ -73,7 +73,7 @@ func TestNewSizeTwoPointer(t *testing.T) {
 // Test a new size three pointer is created successfully
 func TestNewSizeThreePointer(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b0011_1000,

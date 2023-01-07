@@ -7,7 +7,7 @@ import (
 // Test a new size 0 array is created successfully
 func TestNewSize0Array(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(1)
 	bytes := []byte{
 		0b0000_0000,
@@ -23,7 +23,7 @@ func TestNewSize0Array(t *testing.T) {
 // Test a new size 1 array is created successfully
 func TestNewSize1Array(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(1)
 	bytes := []byte{
 		0b0000_0001,
@@ -47,7 +47,7 @@ func TestNewSize1Array(t *testing.T) {
 // Test a new size 2 array is created successfully
 func TestNewSize2Array(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(1)
 	bytes := []byte{
 		0b0000_0010,

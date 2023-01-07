@@ -19,24 +19,34 @@ type Metadata struct {
 
 func (m Metadata) Bytes() []byte {
 
-	metadata := field.Map(make(map[field.Field]field.Field))
-	metadata[field.String("node_count")] = field.Uint32(m.NodeCount)
-	metadata[field.String("record_size")] = field.Uint16(m.RecordSize)
-	metadata[field.String("ip_version")] = field.Uint16(m.IpVersion)
-	metadata[field.String("database_type")] = field.String(m.DatabaseType)
+	// metadata := field.Map(make(map[field.Field]field.Field))
+	metadata := field.NewMap()
+	metadata.Put(field.String("node_count"), field.Uint32(m.NodeCount))
+	metadata.Put(field.String("record_size"), field.Uint16(m.RecordSize))
+	metadata.Put(field.String("ip_version"), field.Uint16(m.IpVersion))
+	metadata.Put(field.String("database_type"), field.String(m.DatabaseType))
+	// metadata[field.String("record_size")] = field.Uint16(m.RecordSize)
+	// metadata[field.String("ip_version")] = field.Uint16(m.IpVersion)
+	// metadata[field.String("database_type")] = field.String(m.DatabaseType)
 	langs := make([]field.Field, 0)
 	for _, l := range m.Languages {
 		langs = append(langs, field.String(l))
 	}
-	metadata[field.String("languages")] = field.Array(langs)
-	metadata[field.String("binary_format_major_version")] = field.Uint16(m.BinaryFormatMajorVersion)
-	metadata[field.String("binary_format_minor_version")] = field.Uint16(m.BinaryFormatMinorVersion)
-	metadata[field.String("build_epoch")] = field.Uint64(m.BuildEpoch.Unix())
-	descriptions := make(map[field.Field]field.Field)
+	metadata.Put(field.String("languages"), field.Array(langs))
+	metadata.Put(field.String("binary_format_major_version"), field.Uint16(m.BinaryFormatMajorVersion))
+	metadata.Put(field.String("binary_format_minor_version"), field.Uint16(m.BinaryFormatMinorVersion))
+	metadata.Put(field.String("build_epoch"), field.Uint64(m.BuildEpoch.Unix()))
+	// metadata[field.String("languages")] = field.Array(langs)
+	// metadata[field.String("binary_format_major_version")] = field.Uint16(m.BinaryFormatMajorVersion)
+	// metadata[field.String("binary_format_minor_version")] = field.Uint16(m.BinaryFormatMinorVersion)
+	// metadata[field.String("build_epoch")] = field.Uint64(m.BuildEpoch.Unix())
+	// descriptions := make(map[field.Field]field.Field)
+	descriptions := field.NewMap()
 	for k, v := range m.Description {
-		descriptions[field.String(k)] = field.String(v)
+		descriptions.Put(field.String(k), field.String(v))
 	}
-	metadata[field.String("description")] = field.Map(descriptions)
+	metadata.Put(field.String("description"), descriptions)
+	// metadata[field.String("description")] = field.Map(descriptions)
 
 	return metadata.Bytes()
 
@@ -45,7 +55,7 @@ func (m Metadata) Bytes() []byte {
 func ParseMetadata(b []byte) Metadata {
 
 	fp := field.FieldParserSingleton()
-	fieldMap := fp.Parse(b).(field.Map)
+	fieldMap := fp.Parse(b).(*field.Map).InternalMap
 
 	var nodeCount uint32
 	var recordSize uint16
@@ -86,8 +96,8 @@ func ParseMetadata(b []byte) Metadata {
 	}
 	if v, f := fieldMap[field.String("description")]; f && v.Type() == field.MapField {
 		description = make(map[string]string)
-		for k, v := range v.(field.Map) {
-			description[k.String()] = v.String()
+		for _, k := range v.(*field.Map).OrderedKeys {
+			description[k.String()] = v.(*field.Map).InternalMap[k].String()
 		}
 	}
 	m := Metadata{

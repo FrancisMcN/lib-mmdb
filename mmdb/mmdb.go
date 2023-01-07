@@ -50,6 +50,8 @@ func (m *MMDB) Load(b []byte) {
 	dataStart := bytes.Index(b, dataSeparator) + 16
 	bstEnd := dataStart - 16
 
+	field.NewFieldParser(m.PrefixTree.Size, bstEnd)
+
 	metaSeparator := []byte{0xAB, 0xCD, 0xEF, 'M', 'a', 'x', 'M', 'i', 'n', 'd', '.', 'c', 'o', 'm'}
 	metaStart := bytes.LastIndex(b[dataStart:], metaSeparator) + dataStart + len(metaSeparator)
 
@@ -112,7 +114,7 @@ func (m MMDB) Query(ip net.IP) field.Field {
 	}
 	if nid > nodeCount {
 		fp := field.FieldParserSingleton()
-		dataOffset := (offset / uint32(nodeBytes)) - 16 - m.metadata.NodeCount
+		dataOffset := (offset / uint32(nodeBytes)) - nodeCount - 16
 		//fmt.Println(offset / uint32(nodeBytes), m.metadata.NodeCount, dataOffset)
 		fp.SetOffset(dataOffset)
 		return fp.Parse(m.Data)

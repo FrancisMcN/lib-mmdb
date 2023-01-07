@@ -22,7 +22,8 @@ func PointerFromBytes(b []byte) Pointer {
 		bytes[1] = b[offset] & 0b0000_0111
 		bytes[2] = b[offset+1]
 		bytes[3] = b[offset+2]
-		p := Pointer(binary.BigEndian.Uint32(bytes))// + 2_048
+		p := Pointer(binary.BigEndian.Uint32(bytes)) + 2_048
+		// fmt.Println("pointer", fmt.Sprintf("%x", bytes), binary.BigEndian.Uint32(bytes))
 		// fmt.Println(p, p - 2048, fmt.Sprintf("%x", bytes), fmt.Sprintf("%08b", bytes))
 		return p
 	case 2:
@@ -33,7 +34,8 @@ func PointerFromBytes(b []byte) Pointer {
 		bytes[1] = b[offset+1]
 		bytes[2] = b[offset+2]
 		bytes[3] = b[offset+3]
-		p := Pointer(binary.BigEndian.Uint32(bytes))// + 526_336
+
+		p := Pointer(binary.BigEndian.Uint32(bytes)) + 526_336
 		//fmt.Println(p, bytes, fmt.Sprintf("%08b", bytes))
 		return p
 	case 3:
@@ -149,12 +151,15 @@ func (p Pointer) Resolve(b []byte) Field {
 	fp := FieldParserSingleton()
 	off := fp.offset
 	pointerSize := (b[fp.offset] & 0b0001_1000) >> 3
+	// fmt.Println("pointer is", p)
 	fp.SetOffset(uint32(p))
+	// fmt.Println("offset", fp.offset, "p", p)
 	f := fp.Parse(b)
 	// pointerSize = 0, pointer requires 2 bytes
 	// pointerSize = 1, pointer requires 3 bytes
 	// pointerSize = 2, pointer requires 4 bytes
 	// pointerSize = 3, pointer requires 5 bytes
+	// fp.SetOffset(uint32(p) + )
 	fp.SetOffset(off + uint32(pointerSize) + 2)
 	return f
 }
@@ -165,7 +170,7 @@ func (p Pointer) Bytes() []byte {
 	//switch pointerSize {
 	//case 1:
 	// 11 bit pointer, pointerSize = 0, uses 2 bytes
-	if p <= 2_048 {
+	if p < 2_048 {
 
 		b := make([]byte, 0)
 		b = append(b, 0b0010_0111, 0b1111_1111)
@@ -178,29 +183,36 @@ func (p Pointer) Bytes() []byte {
 		//fmt.Println(fmt.Sprintf("%08b", b2))
 		return b2
 	}
+
 	//case 2:
 	// 19 bit pointer, pointerSize = 1, uses 3 bytes
-	if p < 526_336 {
+	if p >= 2_048 && p < 526_336 {
 
 		b := make([]byte, 0)
-		b = append(b, 0, 0b0010_0111, 0b1111_1111, 0b1111_1111)
+		b = append(b, 0, 0b0000_0111, 0b1111_1111, 0b1111_1111)
 		b2 := make([]byte, 4)
-		binary.BigEndian.PutUint32(b2, uint32(p)/*+2_048*/)
+		binary.BigEndian.PutUint32(b2, uint32(p)-2_048)
 		for i, _ := range b2 {
 			b2[i] &= b[i]
 		}
+
+		b2 = b2[1:]
+
+		// fmt.Println("pointer val", fmt.Sprintf("%x", b2), p)
+
 		b2[0] |= 0b0010_1000
+		return b2
 		// Remove middle byte
-		return append(b2[:1], b2[2:]...)
+		// return append(b2[:1], b2[2:]...)
 	}
 
 	// 27 bit pointer, pointerSize = 2, uses 4 bytes
-	if p < 134_217_728 {
+	if p >= 526_336 && p < 134_217_728 {
 
 		b := make([]byte, 0)
-		b = append(b, 0b0010_0111, 0b1111_1111, 0b1111_1111, 0b1111_1111)
+		b = append(b, 0b0000_0111, 0b1111_1111, 0b1111_1111, 0b1111_1111)
 		b2 := make([]byte, 4)
-		binary.BigEndian.PutUint32(b2, uint32(p)/*+526_336*/)
+		binary.BigEndian.PutUint32(b2, uint32(p)-526_336)
 		for i, _ := range b2 {
 			b2[i] &= b[i]
 		}
@@ -208,9 +220,10 @@ func (p Pointer) Bytes() []byte {
 		return b2
 	}
 
-	// 32 bit value, pointerSize = 3, uses 4 bytes
-	b2 := make([]byte, 4)
-	binary.BigEndian.PutUint32(b2, uint32(p))
+	// 32 bit value, pointerSize = 3, uses 5 bytes
+	// 1 byte to hold the pointer type and 4 bytes for the value
+	b2 := make([]byte, 5)
+	binary.BigEndian.PutUint32(b2[1:], uint32(p))
 	b2 = append([]byte{0}, b2...)
 	b2[0] |= 0b0011_1000
 	return b2

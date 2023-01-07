@@ -94,14 +94,14 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 
 func (t *Trie) addData(data field.Field) field.Field {
 
+	// } else if data.Type() == field.ArrayField {
+	// 	data = t.PointerifyArray(data.(field.Array))
+	// }
+
 	// Pointerify the map first
 	if data.Type() == field.MapField {
-		data = t.PointerifyMap(data.(field.Map))
-	} else if data.Type() == field.ArrayField {
-		data = t.PointerifyArray(data.(field.Array))
-	}
-
-	if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
+		data = t.PointerifyMap(data.(*field.Map))
+	} else if _, f := t.dataMap[fmt.Sprintf("%x", data)]; !f {
 		// l := len(t.data)
 		// if len(t.data) == 0 {
 		// 	l = 0
@@ -137,6 +137,9 @@ func (t *Trie) Finalise() {
 	t._finalise3(t.root, nid)
 	(*t.totalId).Set(big.NewInt(nid))
 	t.Size = uint32(nid)
+	// for k, v := range t.dataMap {
+	// 	t.dataMap[k] = v + int(nid) + 16
+	// }
 }
 
 func (t *Trie) _finalise(parent **node.Node, nid *int64) {
@@ -245,56 +248,79 @@ func (t Trie) Bytes() []byte {
 	return bytes
 }
 
-func (t *Trie) PointerifyMap(m map[field.Field]field.Field) field.Map {
+func (t *Trie) PointerifyMap(m *field.Map) *field.Map {
 
-	m2 := make(map[field.Field]field.Field)
-	mapOffset := 1
-	for k, v := range m {
-		var keyField field.Field
-		var valField field.Field
-		// fmt.Println(k, v, fmt.Sprintf("%x", k.Bytes()))
+	m2 := field.NewMap()
+	// m2 := make(map[field.Field]field.Field)
+	offset := 1
+
+	// keys := make([]string, 0)
+	// keyvals := make([]field.Field, 0)
+	// for k, _ := range m {
+	// 	keys = append(keys, k.String())
+	// 	keyvals = append(keyvals, k)
+	// }
+	// sort.Strings(keys)
+	// sort.Ints(keys)
+
+	// for i, _ := range keys {
+	for _, k := range m.OrderedKeys {
+		var kf field.Field
+		// fmt.Println("key", k)
 		if key, f := t.dataMap[fmt.Sprintf("%x", k.Bytes())]; f {
-			// fmt.Println(fmt.Sprintf("found %x in dataMap, pointer is", k.Bytes()), field.Pointer(key))
-			keyField = field.Pointer(key)
+			kf = field.Pointer(key)
 		} else {
-			keyField = k
-			t.dataMap[fmt.Sprintf("%x", k.Bytes())] = len(t.data) + mapOffset
+			kf = k
+			t.dataMap[fmt.Sprintf("%x", k.Bytes())] = len(t.data) + offset
 		}
-		mapOffset += len(keyField.Bytes())
+		// if len(kf.Bytes()) == 0 {
+		// 	panic("dfjhdjf")
+		// }
+		offset += len(kf.Bytes())
 
+		v := m.InternalMap[k]
+		var vf field.Field
 		if val, f := t.dataMap[fmt.Sprintf("%x", v.Bytes())]; f {
-			valField = field.Pointer(val)
+			vf = field.Pointer(val)
 		} else {
-			valField = v
-			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data) + mapOffset
+			vf = v
+			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data) + offset
 		}
-		mapOffset += len(valField.Bytes())
-
-		// fmt.Println(keyField, valField)
-
-		m2[keyField] = valField
+		// fmt.Println("data + offset", len(t.data) + offset, "val:", v, vf, "map:", t.dataMap[fmt.Sprintf("%x", v.Bytes())], t.dataMap[fmt.Sprintf("%x", vf.Bytes())])
+		offset += len(vf.Bytes())
+		// if len(kf.Bytes()) == 0 {
+		// 	panic("dfjhdjf")
+		// }
+		// m2[kf] = vf
+		m2.Put(kf, vf)
 
 	}
+
+	// fmt.Println("m2", m2, m2.Size())
+
+	t.dataMap[fmt.Sprintf("%x", m2)] = len(t.data)
+	t.data = append(t.data, m2.Bytes()...)
+	// fmt.Println("m bytes", fmt.Sprintf("%x", field.Map(m2).Bytes()))
 
 	return m2
 }
 
 func (t *Trie) PointerifyArray(a []field.Field) field.Array {
 	arr := make([]field.Field, 0)
-	arrOffset := 2
+
 	for _, v := range a {
-		var valField field.Field
 
-		if key, f := t.dataMap[fmt.Sprintf("%x", v.Bytes())]; f {
-			valField = field.Pointer(key)
-		} else {
-			valField = v
-			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data) + arrOffset
+		var vf field.Field
+		if _, f := t.dataMap[fmt.Sprintf("%x", v.Bytes())]; !f {
+			t.dataMap[fmt.Sprintf("%x", v.Bytes())] = len(t.data)
+			t.data = append(t.data, v.Bytes()...)
 		}
-		arrOffset += len(valField.Bytes())
-		arr = append(arr, valField)
-
+		pointerVal := t.dataMap[fmt.Sprintf("%x", v.Bytes())]
+		v = field.Pointer(pointerVal)
+		arr = append(arr, vf)
 	}
+	t.dataMap[fmt.Sprintf("%x", field.Array(arr))] = len(t.data)
+	t.data = append(t.data, field.Array(arr).Bytes()...)
 	return arr
 }
 

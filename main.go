@@ -21,42 +21,44 @@ func main() {
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	m := make(map[field.Field]field.Field)
-	m[field.String("country")] = field.String("AU")
-	t.Insert(c, field.Map(m))
+	//m := make(map[field.Field]field.Field)
+	m := field.NewMap()
+	m.Put(field.String("country"), field.String("AU"))
+	t.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.1.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	m = make(map[field.Field]field.Field)
-	m[field.String("country")] = field.String("CN")
-	t.Insert(c, field.Map(m))
+	m = field.NewMap()
+	m.Put(field.String("country"), field.String("CN"))
+	t.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.2.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	m = make(map[field.Field]field.Field)
-	m[field.String("country")] = field.String("JP")
-	t.Insert(c, field.Map(m))
+	m = field.NewMap()
+	m.Put(field.String("country"), field.String("JP"))
+	t.Insert(c, m)
 
 	_, c, _ = net.ParseCIDR("1.0.3.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	m = make(map[field.Field]field.Field)
-	m[field.String("country2")] = field.String("US")
-	t.Insert(c, field.Map(m))
+	//m = make(map[field.Field]field.Field)
+	m = field.NewMap()
+	m.Put(field.String("country2"), field.String("US"))
+	t.Insert(c, m)
 	//t.Insert(c, field.String("hello world"))
 
 	_, c, _ = net.ParseCIDR("1.0.4.0/24")
 	c.IP = c.IP.To16()
 	c.IP[len(c.IP)-1-4] = 0
 	c.IP[len(c.IP)-1-5] = 0
-	m = make(map[field.Field]field.Field)
-	m[field.String("country2")] = field.String("US")
-	t.Insert(c, field.Map(m))
+	m = field.NewMap()
+	m.Put(field.String("country2"), field.String("US"))
+	t.Insert(c, m)
 
 	//_, c, _ := net.ParseCIDR("1.1.1.0/24")
 	//c.IP = c.IP.To16()

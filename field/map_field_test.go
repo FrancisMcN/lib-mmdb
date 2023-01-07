@@ -7,7 +7,7 @@ import (
 // Test a new empty map is created successfully
 func TestNewEmptyMap(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b1110_0000,
@@ -22,7 +22,7 @@ func TestNewEmptyMap(t *testing.T) {
 // Test a new map with one element is created successfully
 func TestNewMapWithOneElement(t *testing.T) {
 
-	fp := FieldParserSingleton()
+	fp := NewFieldParser(0, 0)
 	fp.SetOffset(0)
 	bytes := []byte{
 		0b1110_0001,

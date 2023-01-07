@@ -5,19 +5,22 @@ import (
 )
 
 type FieldParser struct {
-	offset uint32
+	offset         uint32
+	nodeCount      uint32
+	searchTreeSize int
 }
 
 var fieldParser *FieldParser
 
-func NewFieldParser() *FieldParser {
-	return &FieldParser{}
+func NewFieldParser(nodeCount uint32, searchTreeSize int) *FieldParser {
+	fieldParser = &FieldParser{
+		nodeCount:      nodeCount,
+		searchTreeSize: searchTreeSize,
+	}
+	return fieldParser
 }
 
 func FieldParserSingleton() *FieldParser {
-	if fieldParser == nil {
-		fieldParser = NewFieldParser()
-	}
 	return fieldParser
 }
 
@@ -31,9 +34,15 @@ func (fp *FieldParser) SetOffset(o uint32) {
 
 func (fp *FieldParser) Parse(b []byte) Field {
 	//fmt.Println(fmt.Sprintf("b0: %x, offset: %d", b[fp.offset + 0], fp.offset))
+	// fmt.Println("off", fp.offset)
+	// fmt.Println("off - nodeCount", fp.offset - fp.nodeCount)
+	// fmt.Println("off + nodeCount", fp.offset + fp.nodeCount)
+	// fmt.Println("off + nodeCount + 16", fp.offset + fp.nodeCount + 16)
 	fieldType, size, off := getFieldTypeAndSize(b[fp.offset:])
 	fp.offset += off
 	//fmt.Println("off", off)
+	// fmt.Println("offset", fp.offset)
+	// fmt.Println("type", fieldType)
 	var field Field
 	switch fieldType {
 	case PointerField:
@@ -49,6 +58,7 @@ func (fp *FieldParser) Parse(b []byte) Field {
 		// fmt.Println("----")
 		// fmt.Println("Pointer is", field)
 		field = field.(Pointer).Resolve(b)
+		// fmt.Println("resolved pointer is", field)
 	case StringField:
 		//fmt.Println("string", fmt.Sprintf("%x %d", b[fp.offset:fp.offset+10], size))
 		field = StringFromBytes(b, size)
