@@ -117,7 +117,6 @@ func (m MMDB) Query(ip net.IP) field.Field {
 
 	}
 	if nid == nodeCount {
-		fmt.Println("not found")
 		return nil
 	}
 	if nid > nodeCount {
