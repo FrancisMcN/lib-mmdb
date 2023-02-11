@@ -8,6 +8,7 @@ import (
 	"github.com/FrancisMcN/lib-mmdb/node"
 	"github.com/FrancisMcN/lib-mmdb/trie"
 	"log"
+	"math/big"
 	"net"
 	"time"
 )
@@ -43,6 +44,53 @@ func NewMMDB() *MMDB {
 	}
 }
 
+//func (m *MMDB) buildPrefixTree(nd *node.Node, offset uint32, stop uint32) {
+//
+//	if offset >= stop {
+//		return
+//	}
+//
+//	// Load records into Trie
+//	nodeCount := m.metadata.NodeCount
+//	recordSize := m.metadata.RecordSize
+//	recordBytes := recordSize / 8
+//	nodeBytes := recordBytes * 2
+//	if recordSize%8 > 0 {
+//		nodeBytes++
+//	}
+//
+//	n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+//	leftNode := node.NewNode()
+//	rightNode := node.NewNode()
+//	//leftNode.SetId(&n[0])
+//	//fmt.Println(leftNode)
+//	if n[0].Cmp(big.NewInt(int64(nodeCount))) > 0 {
+//		fp := field.FieldParserSingleton()
+//		dataOffset := n[0].Sub(n[0], big.NewInt(int64(nodeCount)))
+//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//		fp.SetOffset(uint32(dataOffset.Uint64()))
+//		leftNode.SetData(fp.Parse(m.Data))
+//	}
+//	if n[1].Cmp(big.NewInt(int64(nodeCount))) > 0 {
+//		fp := field.FieldParserSingleton()
+//		dataOffset := n[1].Sub(n[1], big.NewInt(int64(nodeCount)))
+//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//		fp.SetOffset(uint32(dataOffset.Uint64()))
+//		rightNode.SetData(fp.Parse(m.Data))
+//	}
+//
+//	if nd.Left == nil {
+//		nd.Left = leftNode
+//		m.buildPrefixTree(nd.Left, offset+uint32(nodeBytes), uint32(len(m.Bst)))
+//	}
+//	if nd.Right == nil {
+//		nd.Right = rightNode
+//		m.buildPrefixTree(nd.Right, offset+uint32(nodeBytes), uint32(len(m.Bst)))
+//		//m.buildPrefixTree(nd.Right, offset+(uint32(len(m.Bst))/2)+uint32(nodeBytes), uint32(len(m.Bst)))
+//	}
+//
+//}
+
 func (m *MMDB) Load(b []byte) {
 
 	// Find binary search tree section, data section, metadata section
@@ -63,8 +111,49 @@ func (m *MMDB) Load(b []byte) {
 	log.Println("parsed metadata")
 	m.Bst = b[:bstEnd]
 	log.Println("parsed bst")
-	m.Data = b[dataStart:metaStart]
-	log.Println("loaded data")
+	m.Data = b[dataStart : metaStart-len(metaSeparator)]
+	//// Parse Data
+	//fp.SetOffset(0)
+	//for {
+	//	if fp.GetOffset() == uint32(len(m.Data)) {
+	//		break
+	//	}
+	//	f := fp.Parse(m.Data)
+	//	m.PrefixTree.AddData(f)
+	//}
+	//log.Println(fmt.Sprintf("loaded data map (%d entries)", len(m.PrefixTree.GetDataMap())))
+
+	networks := m.Networks()
+	for networks.Next() {
+		network, data, err := networks.Network()
+		if err != nil {
+			fmt.Println("error while getting network", err)
+			continue
+		}
+		m.Insert(network, data)
+	}
+	//m.buildTree(m.PrefixTree.Root)
+	//m.PrefixTree.Finalise()
+	//visited := make(map[*node.Node]bool)
+	//m.buildTree(m.PrefixTree.Root, 0, visited)
+	//m.buildPrefixTree(m.PrefixTree.Root, 0, uint32(len(m.Bst)))
+
+	//for i := uint32(0); i < uint32(len(m.Bst)); {
+	//	n := node.FromBytes(m.Bst[i:i+uint32(nodeBytes)], recordSize)
+	//	rightNode := node.NewNode()
+	//	rightNode.SetId(&n[1])
+	//	if (*rightNode.Id()).Cmp(big.NewInt(int64(nodeCount))) > 0 {
+	//		fp := field.FieldParserSingleton()
+	//
+	//		dataOffset := n[1].Sub(n[1], big.NewInt(int64(nodeCount)))
+	//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+	//		fp.SetOffset(uint32(dataOffset.Uint64()))
+	//		rightNode.SetData(fp.Parse(m.Data))
+	//	}
+	//	root.Right = rightNode
+	//	root = rightNode
+	//	i += uint32(nodeBytes)
+	//}
 
 	dbJson, err := json.Marshal(m.metadata)
 	if err != nil {
@@ -102,18 +191,22 @@ func (m MMDB) Query(ip net.IP) field.Field {
 
 	offset := uint32(0)
 	nid := uint32(0)
+	//s := ""
 	for i := 0; i < 128 && nid < nodeCount; i++ {
 		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
 
 		if !isSet(ip, i) {
+			//s += "0"
 			// Choose the left node
 			offset = uint32(n[0].Uint64()) * uint32(nodeBytes)
 			nid = uint32(n[0].Uint64())
 		} else {
+			//s += "1"
 			// Choose the right node
 			offset = uint32(n[1].Uint64()) * uint32(nodeBytes)
 			nid = uint32(n[1].Uint64())
 		}
+		//fmt.Println("nid", nid, s)
 
 	}
 	if nid == nodeCount {
@@ -148,6 +241,399 @@ func (m MMDB) Bytes() []byte {
 	return b
 
 }
+
+//func (m *MMDB) NextNetwork() string {
+//	var network string
+//
+//	nodeCount := m.metadata.NodeCount
+//	recordSize := m.metadata.RecordSize
+//	recordBytes := recordSize / 8
+//	nodeBytes := recordBytes * 2
+//	if recordSize%8 > 0 {
+//		nodeBytes++
+//	}
+//
+//	for m.nodePointer != nodeCount {
+//
+//		offset := m.nodePointer * uint32(nodeBytes)
+//		if m.nodePointer > nodeCount {
+//			fp := field.FieldParserSingleton()
+//			fp.SetOffset(offset)
+//			return fp.Parse(m.Data).String()
+//		}
+//
+//		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+//		fmt.Println(n)
+//		break
+//	}
+//	return network
+//}
+
+//func (m *MMDB) NextNetwork2(network *net.IPNet) string {
+//
+//	networkString := ""
+//	nodeCount := m.metadata.NodeCount
+//	recordSize := m.metadata.RecordSize
+//	recordBytes := recordSize / 8
+//	nodeBytes := recordBytes * 2
+//	if recordSize%8 > 0 {
+//		nodeBytes++
+//	}
+//
+//	ones, _ := network.Mask.Size()
+//
+//	//fmt.Println(network, ones)
+//
+//	ip := network.IP.To16()
+//	offset := uint32(0)
+//	nid := uint32(0)
+//	// Go to starting point
+//	i := 0
+//	for ; i < ones; i++ {
+//		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+//		if !isSet(ip, i) {
+//			// Choose the left node
+//			offset = uint32(n[0].Uint64()) * uint32(nodeBytes)
+//			nid = uint32(n[0].Uint64())
+//		} else {
+//			// Choose the right node
+//			offset = uint32(n[1].Uint64()) * uint32(nodeBytes)
+//			nid = uint32(n[1].Uint64())
+//		}
+//	}
+//
+//	offset = nid * uint32(nodeBytes)
+//
+//	for offset < uint32(len(m.Bst)) {
+//
+//		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+//
+//		leftCmp := n[0].Cmp(big.NewInt(int64(nodeCount)))
+//		rightCmp := n[1].Cmp(big.NewInt(int64(nodeCount)))
+//
+//		if leftCmp < 0 {
+//			i++
+//			offset = uint32(n[0].Uint64()) * uint32(nodeBytes)
+//		} else if rightCmp < 0 {
+//			i++
+//			offset = uint32(n[1].Uint64()) * uint32(nodeBytes)
+//		} else if leftCmp > 0 {
+//			fp := field.FieldParserSingleton()
+//			dataOffset := n[0].Sub(n[0], big.NewInt(int64(nodeCount)))
+//			dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//			fp.SetOffset(uint32(dataOffset.Uint64()))
+//			fmt.Println(fp.Parse(m.Data))
+//			break
+//		} else if rightCmp > 0 {
+//			fp := field.FieldParserSingleton()
+//			dataOffset := n[0].Sub(n[0], big.NewInt(int64(nodeCount)))
+//			dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//			fp.SetOffset(uint32(dataOffset.Uint64()))
+//			fmt.Println(fp.Parse(m.Data))
+//			break
+//		}
+//
+//	}
+//	fmt.Println("depth", i)
+//	return networkString
+//
+//}
+
+//func (m *MMDB) Networks() []*net.IPNet {
+//
+//	networks := make([]*net.IPNet, 0)
+//
+//	nodeCount := m.metadata.NodeCount
+//	recordSize := m.metadata.RecordSize
+//	recordBytes := recordSize / 8
+//	nodeBytes := recordBytes * 2
+//	if recordSize%8 > 0 {
+//		nodeBytes++
+//	}
+//
+//	offset := uint32(0)
+//	//s := ""
+//	s1 := ""
+//	//s2 := ""
+//	//depth := 1
+//	var num uint64
+//	i := 0
+//	for offset < uint32(len(m.Bst)) {
+//		n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+//
+//		leftCmp := n[0].Cmp(big.NewInt(int64(nodeCount)))
+//		rightCmp := n[1].Cmp(big.NewInt(int64(nodeCount)))
+//		//depth := offset/uint32(nodeBytes) + 1
+//		//fmt.Println(depth)
+//		//if leftCmp < 0 {
+//		//	s1 += "0"
+//		//} else if rightCmp < 0 {
+//		//	s1 += "1"
+//		//}
+//
+//		if leftCmp > 0 {
+//			//s1 += "0"
+//			// Found network
+//			//fmt.Println(s, offset/uint32(nodeBytes))
+//			//networks = append(networks, )
+//			//depth = m.calculateDepth(n[0])
+//			//fmt.Println("depth", depth, n)
+//			fp := field.FieldParserSingleton()
+//			dataOffset := n[0].Sub(n[0], big.NewInt(int64(nodeCount)))
+//			dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//			fp.SetOffset(uint32(dataOffset.Uint64()))
+//			finalNum := num
+//			//fmt.Println(fmt.Sprintf("num: %x, %08b", finalNum, finalNum))
+//			b := make([]byte, 16)
+//			binary.BigEndian.PutUint64(b, finalNum)
+//			fmt.Println(fmt.Sprintf("%s", net.IP(b)))
+//			//fmt.Println(fmt.Sprintf("%08b", b))
+//			depth := int(math.Ceil(math.Log2(float64(offset / uint32(nodeBytes)))))
+//			_, cidr, _ := net.ParseCIDR(fmt.Sprintf("%s/%d", net.IP(b), depth))
+//			networks = append(networks, cidr)
+//			//fmt.Println(cidr)
+//			fmt.Println(fmt.Sprintf("%s0/%d", s1, 128-depth), fp.Parse(m.Data))
+//		}
+//
+//		if rightCmp > 0 {
+//			//s1 += "1"
+//			// Found network
+//			//fmt.Println(s, offset/uint32(nodeBytes))
+//			//networks = append(networks, )
+//			//depth = m.calculateDepth(n[1])
+//			//fmt.Println("depth", depth, n)
+//			fp := field.FieldParserSingleton()
+//			dataOffset := n[1].Sub(n[1], big.NewInt(int64(nodeCount)))
+//			dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//			fp.SetOffset(uint32(dataOffset.Uint64()))
+//			// strings.TrimSuffix(s1, "0")
+//			depth := int(math.Ceil(math.Log2(float64(offset / uint32(nodeBytes)))))
+//			finalNum := num | (0x00_00_00_00_00_00_00_01) //<<(64-depth)
+//			b := make([]byte, 16)
+//			binary.BigEndian.PutUint64(b, finalNum)
+//			fmt.Println(fmt.Sprintf("%s", net.IP(b)))
+//			_, cidr, _ := net.ParseCIDR(fmt.Sprintf("%s/%d", net.IP(b), depth))
+//			//fmt.Println(cidr)
+//			//fmt.Println(fmt.Sprintf("%08b", b))
+//			//fmt.Println(fmt.Sprintf("num: %04x, %08b", finalNum, finalNum))
+//			//fmt.Println("final num: ", fmt.Sprintf("%x", finalNum))
+//			fmt.Println(fmt.Sprintf("%s1/%d", s1, 128-depth), fp.Parse(m.Data))
+//			networks = append(networks, cidr)
+//		}
+//
+//		//if leftCmp < 0 {
+//		//	depth++
+//		//	//num ^= (0x00_00_00_00_00_00_00_00) << (64 - depth - 1)
+//		//	//s1 += "0"
+//		//} else if rightCmp < 0 {
+//		//	depth++
+//		//	//s1 += "1"
+//		//	//num |= (0x00_00_00_00_00_00_00_01) << (64 - depth)
+//		//} else if leftCmp == 0 || rightCmp == 0 {
+//		//	depth--
+//		//}
+//
+//		//fmt.Println(n)
+//		offset += uint32(nodeBytes)
+//		i++
+//		//if i == 1000 {
+//		//	break
+//		//}
+//	}
+//
+//	return networks
+//
+//}
+
+func (m *MMDB) buildTree(root *node.Node) {
+
+	if root == nil {
+		return
+	}
+
+	// Load records into Trie
+	//nodeCount := m.metadata.NodeCount
+	recordSize := m.metadata.RecordSize
+	recordBytes := recordSize / 8
+	nodeBytes := recordBytes * 2
+	if recordSize%8 > 0 {
+		nodeBytes++
+	}
+
+	//offset := uint32(0)
+	//for offset+uint32(nodeBytes) < uint32(len(m.Bst)) {
+	//	n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+	//	if n[0].Cmp(big.NewInt(int64(nodeCount))) == 0 {
+	//
+	//	}
+	//	offset += uint32(nodeBytes)
+	//}
+
+	//initial := root
+	//offset := uint32(0)
+	//for offset+uint32(nodeBytes) < uint32(len(m.Bst)) {
+	//	n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+	//
+	//	leftCmp := n[0].Cmp(big.NewInt(int64(nodeCount)))
+	//	if leftCmp == 0 {
+	//		root.Left = nil
+	//	} else if leftCmp < 0 {
+	//		root.Left = node.NewNode()
+	//		root.Left.SetId(&n[0])
+	//	} else {
+	//		root.Left = node.NewNode()
+	//		//root.Left.SetId(&n[0])
+	//		fp := field.FieldParserSingleton()
+	//		dataOffset := n[0].Sub(n[0], big.NewInt(int64(nodeCount)))
+	//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+	//		fp.SetOffset(uint32(dataOffset.Uint64()))
+	//		root.Left.SetData(fp.Parse(m.Data))
+	//	}
+	//
+	//	if root.Left != nil {
+	//		root = root.Left
+	//	}
+	//
+	//	rightCmp := n[1].Cmp(big.NewInt(int64(nodeCount)))
+	//	if rightCmp == 0 {
+	//		root.Right = nil
+	//	} else if rightCmp < 0 {
+	//		root.Right = node.NewNode()
+	//		//root.Right.SetId(&n[1])
+	//	} else {
+	//		root.Right = node.NewNode()
+	//		//root.Right.SetId(&n[1])
+	//		fp := field.FieldParserSingleton()
+	//		dataOffset := n[1].Sub(n[1], big.NewInt(int64(nodeCount)))
+	//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+	//		fp.SetOffset(uint32(dataOffset.Uint64()))
+	//		root.Right.SetData(fp.Parse(m.Data))
+	//	}
+	//
+	//	if root.Right != nil {
+	//		root = root.Right
+	//	}
+	//
+	//	offset += +uint32(nodeBytes)
+	//}
+
+	//root = initial
+	//offset = uint32(0)
+	//for offset+uint32(nodeBytes) < uint32(len(m.Bst)) {
+	//	n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+	//
+	//	rightCmp := n[1].Cmp(big.NewInt(int64(nodeCount)))
+	//	if rightCmp == 0 {
+	//		root.Right = nil
+	//	} else if rightCmp < 0 {
+	//		root.Right = node.NewNode()
+	//		//root.Right.SetId(&n[1])
+	//	} else {
+	//		root.Right = node.NewNode()
+	//		//root.Right.SetId(&n[1])
+	//		fp := field.FieldParserSingleton()
+	//		dataOffset := n[1].Sub(n[1], big.NewInt(int64(nodeCount)))
+	//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+	//		fp.SetOffset(uint32(dataOffset.Uint64()))
+	//		root.Right.SetData(fp.Parse(m.Data))
+	//	}
+	//
+	//	if root.Right != nil {
+	//		root = root.Right
+	//	}
+	//
+	//	offset += +uint32(nodeBytes)
+	//}
+
+}
+
+func (m MMDB) calculateDepth(b *big.Int) int {
+
+	//nodeCount := m.metadata.NodeCount
+	recordSize := m.metadata.RecordSize
+	recordBytes := recordSize / 8
+	nodeBytes := recordBytes * 2
+	if recordSize%8 > 0 {
+		nodeBytes++
+	}
+	offset := uint32(b.Uint64()) * uint32(nodeBytes)
+	fmt.Println("offset", offset)
+	//offset := uint32(0)
+	//s := ""
+	//s1 := ""
+	//s2 := ""
+	depth := 1
+	for offset > 0 {
+
+		offset -= uint32(nodeBytes)
+	}
+	//for offset > 0 {
+	//	fmt.Println(offset, offset+uint32(nodeBytes))
+	//	n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+	//	fmt.Println("n", n)
+	//	if n[0].Cmp(n[1]) < 0 {
+	//		offset = uint32(n[0].Uint64()) * uint32(nodeBytes)
+	//	} else {
+	//		offset = uint32(n[1].Uint64()) * uint32(nodeBytes)
+	//	}
+	//	depth++
+	//}
+	return depth
+}
+
+//func (m MMDB) buildTree(root *node.Node, offset uint32, visited map[*node.Node]bool) {
+//
+//	//if _, f := visited[root]; f {
+//	//	return
+//	//}
+//
+//	if root == nil {
+//		return
+//	}
+//
+//	// Load records into Trie
+//	nodeCount := m.metadata.NodeCount
+//	recordSize := m.metadata.RecordSize
+//	recordBytes := recordSize / 8
+//	nodeBytes := recordBytes * 2
+//	if recordSize%8 > 0 {
+//		nodeBytes++
+//	}
+//	//visited[root] = true
+//	n := node.FromBytes(m.Bst[offset:offset+uint32(nodeBytes)], recordSize)
+//	leftNode := node.NewNode()
+//	leftNode.SetId(&n[0])
+//	//fmt.Println(leftNode)
+//	if n[0].Cmp(big.NewInt(int64(nodeCount))) == 0 {
+//		leftNode = nil
+//	} else if n[0].Cmp(big.NewInt(int64(nodeCount))) > 0 {
+//		fp := field.FieldParserSingleton()
+//		dataOffset := n[0].Sub(n[0], big.NewInt(int64(nodeCount)))
+//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//		fp.SetOffset(uint32(dataOffset.Uint64()))
+//		leftNode.SetData(fp.Parse(m.Data))
+//	}
+//	rightNode := node.NewNode()
+//	rightNode.SetId(&n[1])
+//	if n[1].Cmp(big.NewInt(int64(nodeCount))) == 0 {
+//		rightNode = nil
+//	} else if n[1].Cmp(big.NewInt(int64(nodeCount))) > 0 {
+//		fp := field.FieldParserSingleton()
+//		dataOffset := n[1].Sub(n[1], big.NewInt(int64(nodeCount)))
+//		dataOffset = dataOffset.Sub(dataOffset, big.NewInt(16))
+//		fp.SetOffset(uint32(dataOffset.Uint64()))
+//		rightNode.SetData(fp.Parse(m.Data))
+//	}
+//	root.Left = leftNode
+//	//if offset+uint32(nodeBytes) < uint32(len(m.Bst)) {
+//	//	m.buildTree(root.Left, offset+uint32(nodeBytes), visited)
+//	//}
+//	root.Right = rightNode
+//	//if offset+uint32(nodeBytes) < uint32(len(m.Bst)) {
+//	//	m.buildTree(root.Right, offset+uint32(nodeBytes), visited)
+//	//}
+//
+//}
 
 // Determines if the 'bit' in the IP is set
 // 'bit' is calculated from the most significant byte first

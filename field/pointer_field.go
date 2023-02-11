@@ -13,7 +13,7 @@ func PointerFromBytes(b []byte) Pointer {
 	offset := fp.offset
 
 	pointerSize := (b[offset] & 0b0001_1000) >> 3
-	// fmt.Println("pointer size is: ",pointerSize)
+	//fmt.Println("pointer size is: ", pointerSize)
 	switch pointerSize {
 	case 1:
 		bytes := make([]byte, 4)
@@ -151,10 +151,12 @@ func (p Pointer) Resolve(b []byte) Field {
 	fp := FieldParserSingleton()
 	off := fp.offset
 	pointerSize := (b[fp.offset] & 0b0001_1000) >> 3
-	// fmt.Println("pointer is", p)
+	//fmt.Println("pointer is", p)
 	fp.SetOffset(uint32(p))
-	// fmt.Println("offset", fp.offset, "p", p)
+	//fmt.Println("offset", fp.offset, "p", p)
+	//fmt.Println(fmt.Sprintf("%x", b[:10]))
 	f := fp.Parse(b)
+	//fmt.Println("f", f)
 	// pointerSize = 0, pointer requires 2 bytes
 	// pointerSize = 1, pointer requires 3 bytes
 	// pointerSize = 2, pointer requires 4 bytes

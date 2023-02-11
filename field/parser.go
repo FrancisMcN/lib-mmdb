@@ -32,6 +32,10 @@ func (fp *FieldParser) SetOffset(o uint32) {
 	fp.offset = o
 }
 
+func (fp *FieldParser) GetOffset() uint32 {
+	return fp.offset
+}
+
 func (fp *FieldParser) Parse(b []byte) Field {
 	//fmt.Println(fmt.Sprintf("b0: %x, offset: %d", b[fp.offset + 0], fp.offset))
 	// fmt.Println("off", fp.offset)
@@ -39,26 +43,27 @@ func (fp *FieldParser) Parse(b []byte) Field {
 	// fmt.Println("off + nodeCount", fp.offset + fp.nodeCount)
 	// fmt.Println("off + nodeCount + 16", fp.offset + fp.nodeCount + 16)
 	fieldType, size, off := getFieldTypeAndSize(b[fp.offset:])
+	//fmt.Println(fmt.Sprintf("%x", b[fp.offset:fp.offset+10]), fieldType, size, off)
 	fp.offset += off
 	//fmt.Println("off", off)
-	// fmt.Println("offset", fp.offset)
-	// fmt.Println("type", fieldType)
+	//fmt.Println("offset", fp.offset)
+	//fmt.Println("type", fieldType)
 	var field Field
 	switch fieldType {
 	case PointerField:
-		// fmt.Println("fp", fp.offset)
+		//fmt.Println("fp", fp.offset)
 		field = PointerFromBytes(b)
 		// fmt.Println("pointer", field)
 		// fmt.Println("fp", fmt.Sprintf("%x %x %x %x", b[fp.offset], b[fp.offset+1], b[fp.offset+2], b[fp.offset+ 3]))
 		// fmt.Println(fmt.Sprintf("%08b hex: %x", b[fp.offset-5:fp.offset+5], b[fp.offset-5:fp.offset+5]))
 		// fmt.Println(fmt.Sprintf("%08b", b[fp.offset:fp.offset+5]))
 		// fmt.Println(fmt.Sprintf("%x", b[fp.offset:fp.offset+5]))
-		// fmt.Println("field", field, uint32(field.(Pointer)))
+		//fmt.Println("field", field, uint32(field.(Pointer)))
 		// fmt.Println(fp.offset, field)
 		// fmt.Println("----")
 		// fmt.Println("Pointer is", field)
 		field = field.(Pointer).Resolve(b)
-		// fmt.Println("resolved pointer is", field)
+		//fmt.Println("resolved pointer is", field)
 	case StringField:
 		//fmt.Println("string", fmt.Sprintf("%x %d", b[fp.offset:fp.offset+10], size))
 		field = StringFromBytes(b, size)

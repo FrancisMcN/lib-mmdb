@@ -10,7 +10,7 @@ import (
 
 type Trie struct {
 	totalId     **big.Int
-	root        *node.Node
+	Root        *node.Node
 	dataMap     map[string]int
 	data        []byte
 	recordSize  int
@@ -22,7 +22,7 @@ func NewTrie() *Trie {
 	id := big.NewInt(0)
 	return &Trie{
 		totalId:     &id,
-		root:        node.NewNode(),
+		Root:        node.NewNode(),
 		dataMap:     make(map[string]int),
 		data:        make([]byte, 0),
 		recordSize:  28,
@@ -32,7 +32,7 @@ func NewTrie() *Trie {
 
 func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 
-	currentNode := t.root
+	currentNode := t.Root
 	ones, bits := cidr.Mask.Size()
 
 	if bits == 32 {
@@ -84,7 +84,7 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 		}
 	}
 
-	data = t.addData(data)
+	data = t.AddData(data)
 
 	id := big.NewInt(int64(uint32(t.dataMap[fmt.Sprintf("%x", data.String())])))
 	currentNode.SetData(data)
@@ -92,7 +92,7 @@ func (t *Trie) Insert(cidr *net.IPNet, data field.Field) {
 
 }
 
-func (t *Trie) addData(data field.Field) field.Field {
+func (t *Trie) AddData(data field.Field) field.Field {
 
 	if data.Type() == field.MapField {
 		data = t.PointerifyMap(data.(*field.Map))
@@ -109,10 +109,10 @@ func (t *Trie) addData(data field.Field) field.Field {
 func (t *Trie) Finalise() {
 	nid := int64(0)
 	if t.ShouldPrune {
-		t._finalise(&t.root, &nid)
+		t._finalise(&t.Root, &nid)
 	}
-	t._finalise2(t.root, &nid)
-	t._finalise3(t.root, nid)
+	t._finalise2(t.Root, &nid)
+	t._finalise3(t.Root, nid)
 	(*t.totalId).Set(big.NewInt(nid))
 	t.Size = uint32(nid)
 }
@@ -185,7 +185,7 @@ func (t *Trie) SetTotalId(id *big.Int) {
 }
 
 func (t *Trie) Print() {
-	t._print(t.root)
+	t._print(t.Root)
 }
 
 func (t *Trie) _print(n *node.Node) {
@@ -206,6 +206,7 @@ func (t *Trie) Serialise(n *node.Node, bytes *[]byte) {
 	if n.Left == nil && n.Right == nil {
 		return
 	}
+
 	*bytes = append(*bytes, n.Bytes(t.recordSize, (*t.totalId).Uint64())...)
 	t.Serialise(n.Left, bytes)
 	t.Serialise(n.Right, bytes)
@@ -214,7 +215,7 @@ func (t *Trie) Serialise(n *node.Node, bytes *[]byte) {
 func (t Trie) Bytes() []byte {
 	bytes := make([]byte, 0)
 
-	t.Serialise(t.root, &bytes)
+	t.Serialise(t.Root, &bytes)
 
 	bytes = append(bytes, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 	bytes = append(bytes, t.data...)
@@ -276,6 +277,10 @@ func (t *Trie) PointerifyArray(a []field.Field) field.Array {
 	t.dataMap[fmt.Sprintf("%x", field.Array(arr))] = len(t.data)
 	t.data = append(t.data, field.Array(arr).Bytes()...)
 	return arr
+}
+
+func (t *Trie) GetDataMap() map[string]int {
+	return t.dataMap
 }
 
 // Determines if the 'bit' in the IP is set
