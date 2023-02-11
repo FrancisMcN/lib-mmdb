@@ -123,15 +123,15 @@ func (m *MMDB) Load(b []byte) {
 	//}
 	//log.Println(fmt.Sprintf("loaded data map (%d entries)", len(m.PrefixTree.GetDataMap())))
 
-	networks := m.Networks()
-	for networks.Next() {
-		network, data, err := networks.Network()
-		if err != nil {
-			fmt.Println("error while getting network", err)
-			continue
-		}
-		m.Insert(network, data)
-	}
+	//networks := m.Networks()
+	//for networks.Next() {
+	//	network, data, err := networks.Network()
+	//	if err != nil {
+	//		fmt.Println("error while getting network", err)
+	//		continue
+	//	}
+	//	m.Insert(network, data)
+	//}
 	//m.buildTree(m.PrefixTree.Root)
 	//m.PrefixTree.Finalise()
 	//visited := make(map[*node.Node]bool)
